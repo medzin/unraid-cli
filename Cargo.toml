@@ -1,0 +1,38 @@
+[package]
+name = "unraid"
+version = "0.1.0"
+edition = "2024"
+description = "CLI client for Unraid API"
+license = "MIT"
+
+[[bin]]
+name = "unraid"
+path = "src/main.rs"
+
+[dependencies]
+clap = { version = "4", features = ["derive", "suggestions", "env"] }
+tokio = { version = "1", features = ["full"] }
+reqwest = { version = "0.12", features = ["json"] }
+serde = { version = "1", features = ["derive"] }
+serde_json = "1"
+toml = "0.8"
+directories = "5"
+anyhow = "1"
+graphql_client = { version = "0.14", features = ["reqwest"] }
+
+[build-dependencies]
+graphql_client_codegen = "0.14"
+
+[lints.rust]
+unsafe_code = "forbid"
+missing_docs = "deny"
+
+[lints.clippy]
+all = "deny"
+pedantic = "deny"
+nursery = "deny"
+unwrap_used = "deny"
+expect_used = "deny"
+panic = "deny"
+module_name_repetitions = { level = "allow", priority = 1 }
+redundant_pub_crate = { level = "allow", priority = 1 }
