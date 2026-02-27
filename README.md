@@ -82,6 +82,7 @@ The CLI resolves server settings in the following order
 | `UNRAID_URL`     | Server URL                          |
 | `UNRAID_API_KEY` | API key for authentication          |
 | `UNRAID_SERVER`  | Server name from config file to use |
+| `UNRAID_TIMEOUT` | Request timeout in seconds          |
 
 ## Commands
 
@@ -120,6 +121,9 @@ unraid --server backup docker list-containers
 
 # Override URL and API key directly
 unraid --url https://192.168.1.100 --api-key YOUR_KEY docker list-containers
+
+# Change the request timeout (default is 5 seconds)
+unraid --timeout 10 docker list-containers
 ```
 
 ## License
