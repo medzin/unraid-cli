@@ -1,0 +1,99 @@
+name: Release
+
+on:
+  push:
+    branches: [main]
+
+env:
+  CARGO_TERM_COLOR: always
+  APOLLO_KEY: ${{ secrets.APOLLO_KEY }}
+
+jobs:
+  build:
+    name: Build (${{ matrix.name }})
+    runs-on: ${{ matrix.runner }}
+    strategy:
+      matrix:
+        include:
+          - name: linux-amd64
+            target: x86_64-unknown-linux-gnu
+            runner: ubuntu-latest
+            binary: unraid
+            artifact: unraid-linux-amd64
+          - name: macos-amd64
+            target: x86_64-apple-darwin
+            runner: macos-latest
+            binary: unraid
+            artifact: unraid-macos-amd64
+          - name: macos-arm64
+            target: aarch64-apple-darwin
+            runner: macos-latest
+            binary: unraid
+            artifact: unraid-macos-arm64
+          - name: windows-amd64
+            target: x86_64-pc-windows-msvc
+            runner: windows-latest
+            binary: unraid.exe
+            artifact: unraid-windows-amd64.exe
+    steps:
+      - uses: actions/checkout@v6
+      - uses: dtolnay/rust-toolchain@stable
+        with:
+          targets: ${{ matrix.target }}
+      - name: Install Rover (Unix)
+        if: runner.os != 'Windows'
+        run: curl -sSL https://rover.apollo.dev/nix/latest | sh && echo "$HOME/.rover/bin" >> $GITHUB_PATH
+      - name: Install Rover (Windows)
+        if: runner.os == 'Windows'
+        run: |
+          iwr 'https://rover.apollo.dev/win/latest' | iex
+          echo "$env:USERPROFILE\.rover\bin" | Out-File -FilePath $env:GITHUB_PATH -Append
+      - uses: Swatinem/rust-cache@v2
+      - name: Build
+        run: cargo build --release --target ${{ matrix.target }}
+      - name: Rename Binary
+        shell: bash
+        run: cp target/${{ matrix.target }}/release/${{ matrix.binary }} ${{ matrix.artifact }}
+      - uses: actions/upload-artifact@v7
+        with:
+          name: ${{ matrix.artifact }}
+          path: ${{ matrix.artifact }}
+
+  release:
+    name: Release
+    needs: build
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/download-artifact@v8
+        with:
+          path: artifacts
+          merge-multiple: true
+      - name: Create Release
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: build-${{ github.sha }}
+          name: Build ${{ github.sha }}
+          body: |
+            Automated build from commit ${{ github.sha }}.
+          files: artifacts/*
+
+  cleanup:
+    name: Cleanup
+    needs: release
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - name: Delete Old Nightly Releases
+        env:
+          GH_TOKEN: ${{ github.token }}
+          GH_REPO: ${{ github.repository }}
+        run: |
+          gh release list --json tagName,createdAt \
+            | jq -r '[.[] | select(.tagName | startswith("build-"))] | sort_by(.createdAt) | reverse | .[3:] | .[].tagName' \
+            | while read -r tag; do
+                echo "Deleting release $tag"
+                gh release delete "$tag" --yes --cleanup-tag
+              done
