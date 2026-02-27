@@ -1,6 +1,7 @@
 use anyhow::{Context, Result};
 use graphql_client::{GraphQLQuery, Response};
 use reqwest::Client;
+use std::time::Duration;
 
 pub struct UnraidClient {
     client: Client,
@@ -9,9 +10,10 @@ pub struct UnraidClient {
 }
 
 impl UnraidClient {
-    pub fn new(url: String, api_key: String) -> Result<Self> {
+    pub fn new(url: String, api_key: String, timeout_secs: u64) -> Result<Self> {
         let client = Client::builder()
             .danger_accept_invalid_certs(true) // Unraid often uses self-signed certs
+            .timeout(Duration::from_secs(timeout_secs))
             .build()
             .context("Failed to create HTTP client")?;
 
@@ -68,6 +70,7 @@ mod tests {
         let result = UnraidClient::new(
             "https://192.168.1.100/graphql".to_string(),
             "test-api-key".to_string(),
+            5,
         );
         assert!(result.is_ok());
     }

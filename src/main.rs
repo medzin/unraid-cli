@@ -30,6 +30,10 @@ struct Cli {
     #[arg(long, global = true, env = "UNRAID_API_KEY")]
     api_key: Option<String>,
 
+    /// Request timeout in seconds
+    #[arg(long, global = true, env = "UNRAID_TIMEOUT", default_value = "5")]
+    timeout: u64,
+
     #[command(subcommand)]
     command: Commands,
 }
@@ -63,7 +67,7 @@ async fn main() -> Result<()> {
                 cli.api_key.as_deref(),
             )?;
 
-            let client = UnraidClient::new(resolved.url, resolved.api_key)?;
+            let client = UnraidClient::new(resolved.url, resolved.api_key, cli.timeout)?;
             handle_docker_command(command, &client).await?;
         }
     }
