@@ -96,6 +96,18 @@ unraid docker list-containers
 # List all containers (including stopped)
 unraid docker list-containers --all
 unraid docker ls -a
+
+# Start a container
+unraid docker start <name>
+
+# Stop a container
+unraid docker stop <name>
+
+# Restart a container
+unraid docker restart <name>
+
+# Update a container to the latest image
+unraid docker update <name>
 ```
 
 ### Global Options
