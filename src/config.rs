@@ -237,6 +237,15 @@ mod tests {
     }
 
     #[test]
+    fn remove_server_preserves_default_when_removing_non_default_server() {
+        let mut config = sample_config();
+
+        config.remove_server("backup");
+
+        assert_eq!(config.default, Some("tower".to_string()));
+    }
+
+    #[test]
     fn remove_server_returns_false_for_unknown_server() {
         let mut config = sample_config();
 

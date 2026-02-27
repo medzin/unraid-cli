@@ -24,4 +24,28 @@ pub type URL = String;
 )]
 pub struct GetDockerContainers;
 
+#[derive(GraphQLQuery)]
+#[graphql(
+    schema_path = "src/graphql/schema.graphql",
+    query_path = "src/graphql/mutations/start_container.graphql",
+    response_derives = "Debug, Clone"
+)]
+pub struct StartDockerContainer;
+
+#[derive(GraphQLQuery)]
+#[graphql(
+    schema_path = "src/graphql/schema.graphql",
+    query_path = "src/graphql/mutations/stop_container.graphql",
+    response_derives = "Debug, Clone"
+)]
+pub struct StopDockerContainer;
+
+#[derive(GraphQLQuery)]
+#[graphql(
+    schema_path = "src/graphql/schema.graphql",
+    query_path = "src/graphql/mutations/update_container.graphql",
+    response_derives = "Debug, Clone"
+)]
+pub struct UpdateDockerContainer;
+
 pub use get_docker_containers::*;

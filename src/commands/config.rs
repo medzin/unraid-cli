@@ -102,12 +102,37 @@ fn list_servers() -> Result<()> {
 
         println!("  {name}{default_marker}");
         println!("    URL: {}", server.url);
-        println!(
-            "    API Key: {}...",
-            &server.api_key[..8.min(server.api_key.len())]
-        );
+        println!("    API Key: {}", mask_api_key(&server.api_key));
         println!();
     }
 
     Ok(())
+}
+
+fn mask_api_key(key: &str) -> String {
+    if key.is_empty() {
+        return "***".to_string();
+    }
+    let visible = 8.min(key.len());
+    format!("{}...", &key[..visible])
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn mask_api_key_masks_correctly() {
+        let cases = [
+            ("", "***"),
+            ("x", "x..."),
+            ("abc", "abc..."),
+            ("12345678", "12345678..."),
+            ("abcdefghijklmnop", "abcdefgh..."),
+        ];
+
+        for (input, expected) in cases {
+            assert_eq!(mask_api_key(input), expected, "mask_api_key({input:?})");
+        }
+    }
 }
