@@ -2,13 +2,23 @@ use anyhow::{Context, Result};
 use directories::ProjectDirs;
 use serde::{Deserialize, Serialize};
 use std::collections::HashMap;
+use std::fmt;
 use std::fs;
 use std::path::PathBuf;
 
-#[derive(Debug, Clone, Serialize, Deserialize)]
+#[derive(Clone, Serialize, Deserialize)]
 pub struct ServerConfig {
     pub url: String,
     pub api_key: String,
+}
+
+impl fmt::Debug for ServerConfig {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        f.debug_struct("ServerConfig")
+            .field("url", &self.url)
+            .field("api_key", &mask_api_key(&self.api_key))
+            .finish()
+    }
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize, Default)]
@@ -86,10 +96,19 @@ impl Config {
 }
 
 /// Resolved server configuration from all sources
-#[derive(Debug, Clone)]
+#[derive(Clone)]
 pub struct ResolvedConfig {
     pub url: String,
     pub api_key: String,
+}
+
+impl fmt::Debug for ResolvedConfig {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        f.debug_struct("ResolvedConfig")
+            .field("url", &self.url)
+            .field("api_key", &mask_api_key(&self.api_key))
+            .finish()
+    }
 }
 
 impl ResolvedConfig {
@@ -139,6 +158,14 @@ impl ResolvedConfig {
             or set UNRAID_URL and UNRAID_API_KEY environment variables."
         )
     }
+}
+
+pub fn mask_api_key(key: &str) -> String {
+    if key.is_empty() {
+        return "***".to_string();
+    }
+    let visible = 8.min(key.len());
+    format!("{}...", &key[..visible])
 }
 
 #[cfg(test)]
@@ -317,6 +344,45 @@ default = "myserver"
 
         assert_eq!(config.default, Some("myserver".to_string()));
         assert!(config.servers.is_empty());
+    }
+
+    #[test]
+    fn mask_api_key_masks_correctly() {
+        let cases = [
+            ("", "***"),
+            ("x", "x..."),
+            ("abc", "abc..."),
+            ("12345678", "12345678..."),
+            ("abcdefghijklmnop", "abcdefgh..."),
+        ];
+
+        for (input, expected) in cases {
+            assert_eq!(mask_api_key(input), expected, "mask_api_key({input:?})");
+        }
+    }
+
+    #[test]
+    fn debug_server_config_masks_api_key() {
+        let config = ServerConfig {
+            url: "https://example.com".to_string(),
+            api_key: "super-secret-key-12345".to_string(),
+        };
+        let debug_output = format!("{config:?}");
+        assert!(debug_output.contains("https://example.com"));
+        assert!(!debug_output.contains("super-secret-key-12345"));
+        assert!(debug_output.contains("super-se..."));
+    }
+
+    #[test]
+    fn debug_resolved_config_masks_api_key() {
+        let config = ResolvedConfig {
+            url: "https://example.com".to_string(),
+            api_key: "super-secret-key-12345".to_string(),
+        };
+        let debug_output = format!("{config:?}");
+        assert!(debug_output.contains("https://example.com"));
+        assert!(!debug_output.contains("super-secret-key-12345"));
+        assert!(debug_output.contains("super-se..."));
     }
 
     #[test]

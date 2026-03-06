@@ -1,7 +1,7 @@
 use anyhow::Result;
 use clap::Subcommand;
 
-use crate::config::Config;
+use crate::config::{Config, mask_api_key};
 
 #[derive(Debug, Subcommand)]
 pub enum ConfigCommands {
@@ -107,32 +107,4 @@ fn list_servers() -> Result<()> {
     }
 
     Ok(())
-}
-
-fn mask_api_key(key: &str) -> String {
-    if key.is_empty() {
-        return "***".to_string();
-    }
-    let visible = 8.min(key.len());
-    format!("{}...", &key[..visible])
-}
-
-#[cfg(test)]
-mod tests {
-    use super::*;
-
-    #[test]
-    fn mask_api_key_masks_correctly() {
-        let cases = [
-            ("", "***"),
-            ("x", "x..."),
-            ("abc", "abc..."),
-            ("12345678", "12345678..."),
-            ("abcdefghijklmnop", "abcdefgh..."),
-        ];
-
-        for (input, expected) in cases {
-            assert_eq!(mask_api_key(input), expected, "mask_api_key({input:?})");
-        }
-    }
 }

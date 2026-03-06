@@ -79,10 +79,10 @@ fn find_vm_id(domains: &[VmDomain], name: &str) -> Result<String> {
     let name_lower = name.to_lowercase();
 
     for domain in domains {
-        if let Some(ref vm_name) = domain.name {
-            if vm_name.to_lowercase() == name_lower {
-                return Ok(domain.id.clone());
-            }
+        if let Some(ref vm_name) = domain.name
+            && vm_name.to_lowercase() == name_lower
+        {
+            return Ok(domain.id.clone());
         }
     }
 
