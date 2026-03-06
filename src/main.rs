@@ -11,6 +11,7 @@ use clap::{Parser, Subcommand};
 use crate::client::UnraidClient;
 use crate::commands::config::{ConfigCommands, handle_config_command};
 use crate::commands::docker::{DockerCommands, handle_docker_command};
+use crate::commands::vm::{VmCommands, handle_vm_command};
 use crate::config::ResolvedConfig;
 
 #[derive(Parser)]
@@ -50,6 +51,11 @@ enum Commands {
         #[command(subcommand)]
         command: DockerCommands,
     },
+    /// Virtual machine management
+    Vm {
+        #[command(subcommand)]
+        command: VmCommands,
+    },
 }
 
 #[tokio::main]
@@ -69,6 +75,16 @@ async fn main() -> Result<()> {
 
             let client = UnraidClient::new(resolved.url, resolved.api_key, cli.timeout)?;
             handle_docker_command(command, &client).await?;
+        }
+        Commands::Vm { command } => {
+            let resolved = ResolvedConfig::resolve(
+                cli.server.as_deref(),
+                cli.url.as_deref(),
+                cli.api_key.as_deref(),
+            )?;
+
+            let client = UnraidClient::new(resolved.url, resolved.api_key, cli.timeout)?;
+            handle_vm_command(command, &client).await?;
         }
     }
 

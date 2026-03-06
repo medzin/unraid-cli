@@ -1,0 +1,5 @@
+mutation ResumeVm($id: PrefixedID!) {
+  vm {
+    resume(id: $id)
+  }
+}

@@ -11,8 +11,8 @@ use crate::graphql::{
 #[derive(Debug, Subcommand)]
 pub enum DockerCommands {
     /// List Docker containers
-    #[command(visible_alias = "ls")]
-    ListContainers {
+    #[command(visible_aliases = ["ls", "list-containers"])]
+    List {
         /// Show all containers (default: only running)
         #[arg(short, long)]
         all: bool,
@@ -41,7 +41,7 @@ pub enum DockerCommands {
 
 pub async fn handle_docker_command(cmd: DockerCommands, client: &UnraidClient) -> Result<()> {
     match cmd {
-        DockerCommands::ListContainers { all } => list_containers(client, all).await,
+        DockerCommands::List { all } => list_containers(client, all).await,
         DockerCommands::Start { name } => start_container(client, &name).await,
         DockerCommands::Stop { name } => stop_container(client, &name).await,
         DockerCommands::Restart { name } => restart_container(client, &name).await,
@@ -70,9 +70,7 @@ fn find_container_id(containers: &[Container], name: &str) -> Result<String> {
         }
     }
 
-    bail!(
-        "Container '{name}' not found. Use 'docker list-containers --all' to see available containers."
-    );
+    bail!("Container '{name}' not found. Use 'docker list --all' to see available containers.");
 }
 
 async fn start_container(client: &UnraidClient, name: &str) -> Result<()> {

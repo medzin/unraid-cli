@@ -16,6 +16,8 @@ pub type JSON = serde_json::Value;
 #[allow(dead_code, clippy::upper_case_acronyms)]
 pub type URL = String;
 
+// Docker queries & mutations
+
 #[derive(GraphQLQuery)]
 #[graphql(
     schema_path = "src/graphql/schema.graphql",
@@ -27,7 +29,7 @@ pub struct GetDockerContainers;
 #[derive(GraphQLQuery)]
 #[graphql(
     schema_path = "src/graphql/schema.graphql",
-    query_path = "src/graphql/mutations/start_container.graphql",
+    query_path = "src/graphql/mutations/docker/start_container.graphql",
     response_derives = "Debug, Clone"
 )]
 pub struct StartDockerContainer;
@@ -35,7 +37,7 @@ pub struct StartDockerContainer;
 #[derive(GraphQLQuery)]
 #[graphql(
     schema_path = "src/graphql/schema.graphql",
-    query_path = "src/graphql/mutations/stop_container.graphql",
+    query_path = "src/graphql/mutations/docker/stop_container.graphql",
     response_derives = "Debug, Clone"
 )]
 pub struct StopDockerContainer;
@@ -43,9 +45,75 @@ pub struct StopDockerContainer;
 #[derive(GraphQLQuery)]
 #[graphql(
     schema_path = "src/graphql/schema.graphql",
-    query_path = "src/graphql/mutations/update_container.graphql",
+    query_path = "src/graphql/mutations/docker/update_container.graphql",
     response_derives = "Debug, Clone"
 )]
 pub struct UpdateDockerContainer;
+
+// VM queries & mutations
+
+#[derive(GraphQLQuery)]
+#[graphql(
+    schema_path = "src/graphql/schema.graphql",
+    query_path = "src/graphql/queries/vms.graphql",
+    response_derives = "Debug, Clone, PartialEq, Eq"
+)]
+pub struct GetVms;
+
+#[derive(GraphQLQuery)]
+#[graphql(
+    schema_path = "src/graphql/schema.graphql",
+    query_path = "src/graphql/mutations/vm/start_vm.graphql",
+    response_derives = "Debug, Clone"
+)]
+pub struct StartVm;
+
+#[derive(GraphQLQuery)]
+#[graphql(
+    schema_path = "src/graphql/schema.graphql",
+    query_path = "src/graphql/mutations/vm/stop_vm.graphql",
+    response_derives = "Debug, Clone"
+)]
+pub struct StopVm;
+
+#[derive(GraphQLQuery)]
+#[graphql(
+    schema_path = "src/graphql/schema.graphql",
+    query_path = "src/graphql/mutations/vm/pause_vm.graphql",
+    response_derives = "Debug, Clone"
+)]
+pub struct PauseVm;
+
+#[derive(GraphQLQuery)]
+#[graphql(
+    schema_path = "src/graphql/schema.graphql",
+    query_path = "src/graphql/mutations/vm/resume_vm.graphql",
+    response_derives = "Debug, Clone"
+)]
+pub struct ResumeVm;
+
+#[derive(GraphQLQuery)]
+#[graphql(
+    schema_path = "src/graphql/schema.graphql",
+    query_path = "src/graphql/mutations/vm/force_stop_vm.graphql",
+    response_derives = "Debug, Clone"
+)]
+pub struct ForceStopVm;
+
+#[derive(GraphQLQuery)]
+#[graphql(
+    schema_path = "src/graphql/schema.graphql",
+    query_path = "src/graphql/mutations/vm/reboot_vm.graphql",
+    response_derives = "Debug, Clone"
+)]
+pub struct RebootVm;
+
+#[derive(GraphQLQuery)]
+#[graphql(
+    schema_path = "src/graphql/schema.graphql",
+    query_path = "src/graphql/mutations/vm/reset_vm.graphql",
+    response_derives = "Debug, Clone"
+)]
+pub struct ResetVm;
 
 pub use get_docker_containers::*;

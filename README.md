@@ -13,7 +13,7 @@ unraid config add tower --url https://192.168.1.100 --api-key YOUR_API_KEY
 2. List running Docker containers:
 
 ```bash
-unraid docker list-containers
+unraid docker list
 ```
 
 ## Configuration
@@ -92,10 +92,10 @@ Manage Docker containers on your Unraid server.
 
 ```bash
 # List running containers
-unraid docker list-containers
+unraid docker list
 
 # List all containers (including stopped)
-unraid docker list-containers --all
+unraid docker list --all
 unraid docker ls -a
 
 # Start a container
@@ -109,6 +109,40 @@ unraid docker restart <name>
 
 # Update a container to the latest image
 unraid docker update <name>
+```
+
+### Virtual Machines
+
+Manage virtual machines on your Unraid server.
+
+```bash
+# List running VMs
+unraid vm list
+
+# List all VMs (including stopped)
+unraid vm list --all
+unraid vm ls -a
+
+# Start a VM
+unraid vm start <name>
+
+# Stop a VM (graceful shutdown)
+unraid vm stop <name>
+
+# Force stop a VM
+unraid vm force-stop <name>
+
+# Pause a VM
+unraid vm pause <name>
+
+# Resume a paused VM
+unraid vm resume <name>
+
+# Reboot a VM
+unraid vm reboot <name>
+
+# Reset a VM (hard reboot)
+unraid vm reset <name>
 ```
 
 ### Global Options
