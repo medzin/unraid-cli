@@ -1,0 +1,50 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+env:
+  APOLLO_KEY: ${{ secrets.APOLLO_KEY }}
+
+jobs:
+  generate:
+    name: Generate
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v6
+      - uses: actions/setup-go@v6
+        with:
+          go-version-file: go.mod
+      - name: Install Rover
+        run: curl -sSL https://rover.apollo.dev/nix/latest | sh && echo "$HOME/.rover/bin" >> $GITHUB_PATH
+      - name: Check schema
+        run: make schema-check || echo "::warning::GraphQL schema has changed upstream. Run 'make schema-fetch generate' to update."
+      - name: Run code generation
+        run: make schema-fetch generate
+      - name: Check for uncommitted changes
+        run: git diff --exit-code internal/client/generated.go
+
+  lint:
+    name: Lint
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v6
+      - uses: actions/setup-go@v6
+        with:
+          go-version-file: go.mod
+      - name: Run lint
+        uses: golangci/golangci-lint-action@v9
+
+  test:
+    name: Test
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v6
+      - uses: actions/setup-go@v6
+        with:
+          go-version-file: go.mod
+      - name: Run tests
+        run: make test

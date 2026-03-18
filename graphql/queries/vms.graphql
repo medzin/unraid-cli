@@ -1,0 +1,9 @@
+query GetVms {
+  vms {
+    domains {
+      id
+      name
+      state
+    }
+  }
+}
