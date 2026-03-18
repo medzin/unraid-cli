@@ -1,0 +1,20 @@
+schema: graphql/schema.graphql
+operations:
+  - graphql/queries/*.graphql
+  - graphql/mutations/**/*.graphql
+generated: internal/client/generated.go
+package: client
+optional: pointer
+bindings:
+  PrefixedID:
+    type: string
+  Port:
+    type: int
+  DateTime:
+    type: string
+  BigInt:
+    type: int64
+  JSON:
+    type: encoding/json.RawMessage
+  URL:
+    type: string

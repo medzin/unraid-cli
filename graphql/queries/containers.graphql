@@ -1,0 +1,17 @@
+query GetDockerContainers {
+  docker {
+    containers {
+      id
+      names
+      image
+      state
+      status
+      ports {
+        ip
+        privatePort
+        publicPort
+        type
+      }
+    }
+  }
+}

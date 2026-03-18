@@ -1,0 +1,28 @@
+version: "2"
+
+linters:
+  enable:
+    - errcheck
+    - govet
+    - staticcheck
+    - unused
+    - gocritic
+    - revive
+    - misspell
+    - nilerr
+    - exhaustive
+    - copyloopvar
+  settings:
+    exhaustive:
+      default-signifies-exhaustive: true
+    revive:
+      rules:
+        - name: unexported-return
+          disabled: true
+  exclusions:
+    paths:
+      - vendor
+
+formatters:
+  enable:
+    - gofumpt

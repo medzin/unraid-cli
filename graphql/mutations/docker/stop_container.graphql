@@ -1,0 +1,10 @@
+mutation StopDockerContainer($id: PrefixedID!) {
+  docker {
+    stop(id: $id) {
+      id
+      names
+      state
+      status
+    }
+  }
+}
