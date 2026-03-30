@@ -8,6 +8,74 @@ import (
 	"github.com/Khan/genqlient/graphql"
 )
 
+type ArrayDiskStatus string
+
+const (
+	ArrayDiskStatusDiskNp        ArrayDiskStatus = "DISK_NP"
+	ArrayDiskStatusDiskOk        ArrayDiskStatus = "DISK_OK"
+	ArrayDiskStatusDiskNpMissing ArrayDiskStatus = "DISK_NP_MISSING"
+	ArrayDiskStatusDiskInvalid   ArrayDiskStatus = "DISK_INVALID"
+	ArrayDiskStatusDiskWrong     ArrayDiskStatus = "DISK_WRONG"
+	ArrayDiskStatusDiskDsbl      ArrayDiskStatus = "DISK_DSBL"
+	ArrayDiskStatusDiskNpDsbl    ArrayDiskStatus = "DISK_NP_DSBL"
+	ArrayDiskStatusDiskDsblNew   ArrayDiskStatus = "DISK_DSBL_NEW"
+	ArrayDiskStatusDiskNew       ArrayDiskStatus = "DISK_NEW"
+)
+
+var AllArrayDiskStatus = []ArrayDiskStatus{
+	ArrayDiskStatusDiskNp,
+	ArrayDiskStatusDiskOk,
+	ArrayDiskStatusDiskNpMissing,
+	ArrayDiskStatusDiskInvalid,
+	ArrayDiskStatusDiskWrong,
+	ArrayDiskStatusDiskDsbl,
+	ArrayDiskStatusDiskNpDsbl,
+	ArrayDiskStatusDiskDsblNew,
+	ArrayDiskStatusDiskNew,
+}
+
+type ArrayState string
+
+const (
+	ArrayStateStarted             ArrayState = "STARTED"
+	ArrayStateStopped             ArrayState = "STOPPED"
+	ArrayStateNewArray            ArrayState = "NEW_ARRAY"
+	ArrayStateReconDisk           ArrayState = "RECON_DISK"
+	ArrayStateDisableDisk         ArrayState = "DISABLE_DISK"
+	ArrayStateSwapDsbl            ArrayState = "SWAP_DSBL"
+	ArrayStateInvalidExpansion    ArrayState = "INVALID_EXPANSION"
+	ArrayStateParityNotBiggest    ArrayState = "PARITY_NOT_BIGGEST"
+	ArrayStateTooManyMissingDisks ArrayState = "TOO_MANY_MISSING_DISKS"
+	ArrayStateNewDiskTooSmall     ArrayState = "NEW_DISK_TOO_SMALL"
+	ArrayStateNoDataDisks         ArrayState = "NO_DATA_DISKS"
+)
+
+var AllArrayState = []ArrayState{
+	ArrayStateStarted,
+	ArrayStateStopped,
+	ArrayStateNewArray,
+	ArrayStateReconDisk,
+	ArrayStateDisableDisk,
+	ArrayStateSwapDsbl,
+	ArrayStateInvalidExpansion,
+	ArrayStateParityNotBiggest,
+	ArrayStateTooManyMissingDisks,
+	ArrayStateNewDiskTooSmall,
+	ArrayStateNoDataDisks,
+}
+
+type ArrayStateInputState string
+
+const (
+	ArrayStateInputStateStart ArrayStateInputState = "START"
+	ArrayStateInputStateStop  ArrayStateInputState = "STOP"
+)
+
+var AllArrayStateInputState = []ArrayStateInputState{
+	ArrayStateInputStateStart,
+	ArrayStateInputStateStop,
+}
+
 type ContainerPortType string
 
 const (
@@ -50,6 +118,158 @@ type ForceStopVmVmVmMutations struct {
 
 // GetForceStop returns ForceStopVmVmVmMutations.ForceStop, and is useful for accessing the field via an interface.
 func (v *ForceStopVmVmVmMutations) GetForceStop() bool { return v.ForceStop }
+
+// GetArrayArrayUnraidArray includes the requested fields of the GraphQL type UnraidArray.
+type GetArrayArrayUnraidArray struct {
+	Id string `json:"id"`
+	// Current array state
+	State ArrayState `json:"state"`
+	// Parity disks in the current array
+	Parities []GetArrayArrayUnraidArrayParitiesArrayDisk `json:"parities"`
+	// Data disks in the current array
+	Disks []GetArrayArrayUnraidArrayDisksArrayDisk `json:"disks"`
+	// Caches in the current array
+	Caches []GetArrayArrayUnraidArrayCachesArrayDisk `json:"caches"`
+}
+
+// GetId returns GetArrayArrayUnraidArray.Id, and is useful for accessing the field via an interface.
+func (v *GetArrayArrayUnraidArray) GetId() string { return v.Id }
+
+// GetState returns GetArrayArrayUnraidArray.State, and is useful for accessing the field via an interface.
+func (v *GetArrayArrayUnraidArray) GetState() ArrayState { return v.State }
+
+// GetParities returns GetArrayArrayUnraidArray.Parities, and is useful for accessing the field via an interface.
+func (v *GetArrayArrayUnraidArray) GetParities() []GetArrayArrayUnraidArrayParitiesArrayDisk {
+	return v.Parities
+}
+
+// GetDisks returns GetArrayArrayUnraidArray.Disks, and is useful for accessing the field via an interface.
+func (v *GetArrayArrayUnraidArray) GetDisks() []GetArrayArrayUnraidArrayDisksArrayDisk {
+	return v.Disks
+}
+
+// GetCaches returns GetArrayArrayUnraidArray.Caches, and is useful for accessing the field via an interface.
+func (v *GetArrayArrayUnraidArray) GetCaches() []GetArrayArrayUnraidArrayCachesArrayDisk {
+	return v.Caches
+}
+
+// GetArrayArrayUnraidArrayCachesArrayDisk includes the requested fields of the GraphQL type ArrayDisk.
+type GetArrayArrayUnraidArrayCachesArrayDisk struct {
+	Id     string           `json:"id"`
+	Name   *string          `json:"name"`
+	Device *string          `json:"device"`
+	Status *ArrayDiskStatus `json:"status"`
+	// (KB) Disk Size total
+	Size *int64 `json:"size"`
+	// (KB) Total Size of the FS (Not present on Parity type drive)
+	FsSize *int64 `json:"fsSize"`
+	// (KB) Free Size on the FS (Not present on Parity type drive)
+	FsFree *int64 `json:"fsFree"`
+	// Whether the disk is currently spinning
+	IsSpinning *bool `json:"isSpinning"`
+}
+
+// GetId returns GetArrayArrayUnraidArrayCachesArrayDisk.Id, and is useful for accessing the field via an interface.
+func (v *GetArrayArrayUnraidArrayCachesArrayDisk) GetId() string { return v.Id }
+
+// GetName returns GetArrayArrayUnraidArrayCachesArrayDisk.Name, and is useful for accessing the field via an interface.
+func (v *GetArrayArrayUnraidArrayCachesArrayDisk) GetName() *string { return v.Name }
+
+// GetDevice returns GetArrayArrayUnraidArrayCachesArrayDisk.Device, and is useful for accessing the field via an interface.
+func (v *GetArrayArrayUnraidArrayCachesArrayDisk) GetDevice() *string { return v.Device }
+
+// GetStatus returns GetArrayArrayUnraidArrayCachesArrayDisk.Status, and is useful for accessing the field via an interface.
+func (v *GetArrayArrayUnraidArrayCachesArrayDisk) GetStatus() *ArrayDiskStatus { return v.Status }
+
+// GetSize returns GetArrayArrayUnraidArrayCachesArrayDisk.Size, and is useful for accessing the field via an interface.
+func (v *GetArrayArrayUnraidArrayCachesArrayDisk) GetSize() *int64 { return v.Size }
+
+// GetFsSize returns GetArrayArrayUnraidArrayCachesArrayDisk.FsSize, and is useful for accessing the field via an interface.
+func (v *GetArrayArrayUnraidArrayCachesArrayDisk) GetFsSize() *int64 { return v.FsSize }
+
+// GetFsFree returns GetArrayArrayUnraidArrayCachesArrayDisk.FsFree, and is useful for accessing the field via an interface.
+func (v *GetArrayArrayUnraidArrayCachesArrayDisk) GetFsFree() *int64 { return v.FsFree }
+
+// GetIsSpinning returns GetArrayArrayUnraidArrayCachesArrayDisk.IsSpinning, and is useful for accessing the field via an interface.
+func (v *GetArrayArrayUnraidArrayCachesArrayDisk) GetIsSpinning() *bool { return v.IsSpinning }
+
+// GetArrayArrayUnraidArrayDisksArrayDisk includes the requested fields of the GraphQL type ArrayDisk.
+type GetArrayArrayUnraidArrayDisksArrayDisk struct {
+	Id     string           `json:"id"`
+	Name   *string          `json:"name"`
+	Device *string          `json:"device"`
+	Status *ArrayDiskStatus `json:"status"`
+	// (KB) Disk Size total
+	Size *int64 `json:"size"`
+	// (KB) Total Size of the FS (Not present on Parity type drive)
+	FsSize *int64 `json:"fsSize"`
+	// (KB) Free Size on the FS (Not present on Parity type drive)
+	FsFree *int64 `json:"fsFree"`
+	// Whether the disk is currently spinning
+	IsSpinning *bool `json:"isSpinning"`
+}
+
+// GetId returns GetArrayArrayUnraidArrayDisksArrayDisk.Id, and is useful for accessing the field via an interface.
+func (v *GetArrayArrayUnraidArrayDisksArrayDisk) GetId() string { return v.Id }
+
+// GetName returns GetArrayArrayUnraidArrayDisksArrayDisk.Name, and is useful for accessing the field via an interface.
+func (v *GetArrayArrayUnraidArrayDisksArrayDisk) GetName() *string { return v.Name }
+
+// GetDevice returns GetArrayArrayUnraidArrayDisksArrayDisk.Device, and is useful for accessing the field via an interface.
+func (v *GetArrayArrayUnraidArrayDisksArrayDisk) GetDevice() *string { return v.Device }
+
+// GetStatus returns GetArrayArrayUnraidArrayDisksArrayDisk.Status, and is useful for accessing the field via an interface.
+func (v *GetArrayArrayUnraidArrayDisksArrayDisk) GetStatus() *ArrayDiskStatus { return v.Status }
+
+// GetSize returns GetArrayArrayUnraidArrayDisksArrayDisk.Size, and is useful for accessing the field via an interface.
+func (v *GetArrayArrayUnraidArrayDisksArrayDisk) GetSize() *int64 { return v.Size }
+
+// GetFsSize returns GetArrayArrayUnraidArrayDisksArrayDisk.FsSize, and is useful for accessing the field via an interface.
+func (v *GetArrayArrayUnraidArrayDisksArrayDisk) GetFsSize() *int64 { return v.FsSize }
+
+// GetFsFree returns GetArrayArrayUnraidArrayDisksArrayDisk.FsFree, and is useful for accessing the field via an interface.
+func (v *GetArrayArrayUnraidArrayDisksArrayDisk) GetFsFree() *int64 { return v.FsFree }
+
+// GetIsSpinning returns GetArrayArrayUnraidArrayDisksArrayDisk.IsSpinning, and is useful for accessing the field via an interface.
+func (v *GetArrayArrayUnraidArrayDisksArrayDisk) GetIsSpinning() *bool { return v.IsSpinning }
+
+// GetArrayArrayUnraidArrayParitiesArrayDisk includes the requested fields of the GraphQL type ArrayDisk.
+type GetArrayArrayUnraidArrayParitiesArrayDisk struct {
+	Id     string           `json:"id"`
+	Name   *string          `json:"name"`
+	Device *string          `json:"device"`
+	Status *ArrayDiskStatus `json:"status"`
+	// (KB) Disk Size total
+	Size *int64 `json:"size"`
+	// Whether the disk is currently spinning
+	IsSpinning *bool `json:"isSpinning"`
+}
+
+// GetId returns GetArrayArrayUnraidArrayParitiesArrayDisk.Id, and is useful for accessing the field via an interface.
+func (v *GetArrayArrayUnraidArrayParitiesArrayDisk) GetId() string { return v.Id }
+
+// GetName returns GetArrayArrayUnraidArrayParitiesArrayDisk.Name, and is useful for accessing the field via an interface.
+func (v *GetArrayArrayUnraidArrayParitiesArrayDisk) GetName() *string { return v.Name }
+
+// GetDevice returns GetArrayArrayUnraidArrayParitiesArrayDisk.Device, and is useful for accessing the field via an interface.
+func (v *GetArrayArrayUnraidArrayParitiesArrayDisk) GetDevice() *string { return v.Device }
+
+// GetStatus returns GetArrayArrayUnraidArrayParitiesArrayDisk.Status, and is useful for accessing the field via an interface.
+func (v *GetArrayArrayUnraidArrayParitiesArrayDisk) GetStatus() *ArrayDiskStatus { return v.Status }
+
+// GetSize returns GetArrayArrayUnraidArrayParitiesArrayDisk.Size, and is useful for accessing the field via an interface.
+func (v *GetArrayArrayUnraidArrayParitiesArrayDisk) GetSize() *int64 { return v.Size }
+
+// GetIsSpinning returns GetArrayArrayUnraidArrayParitiesArrayDisk.IsSpinning, and is useful for accessing the field via an interface.
+func (v *GetArrayArrayUnraidArrayParitiesArrayDisk) GetIsSpinning() *bool { return v.IsSpinning }
+
+// GetArrayResponse is returned by GetArray on success.
+type GetArrayResponse struct {
+	Array GetArrayArrayUnraidArray `json:"array"`
+}
+
+// GetArray returns GetArrayResponse.Array, and is useful for accessing the field via an interface.
+func (v *GetArrayResponse) GetArray() GetArrayArrayUnraidArray { return v.Array }
 
 // GetDockerContainersDocker includes the requested fields of the GraphQL type Docker.
 type GetDockerContainersDocker struct {
@@ -279,6 +499,38 @@ type ResumeVmVmVmMutations struct {
 
 // GetResume returns ResumeVmVmVmMutations.Resume, and is useful for accessing the field via an interface.
 func (v *ResumeVmVmVmMutations) GetResume() bool { return v.Resume }
+
+// SetArrayStateArrayArrayMutations includes the requested fields of the GraphQL type ArrayMutations.
+type SetArrayStateArrayArrayMutations struct {
+	// Set array state
+	SetState SetArrayStateArrayArrayMutationsSetStateUnraidArray `json:"setState"`
+}
+
+// GetSetState returns SetArrayStateArrayArrayMutations.SetState, and is useful for accessing the field via an interface.
+func (v *SetArrayStateArrayArrayMutations) GetSetState() SetArrayStateArrayArrayMutationsSetStateUnraidArray {
+	return v.SetState
+}
+
+// SetArrayStateArrayArrayMutationsSetStateUnraidArray includes the requested fields of the GraphQL type UnraidArray.
+type SetArrayStateArrayArrayMutationsSetStateUnraidArray struct {
+	Id string `json:"id"`
+	// Current array state
+	State ArrayState `json:"state"`
+}
+
+// GetId returns SetArrayStateArrayArrayMutationsSetStateUnraidArray.Id, and is useful for accessing the field via an interface.
+func (v *SetArrayStateArrayArrayMutationsSetStateUnraidArray) GetId() string { return v.Id }
+
+// GetState returns SetArrayStateArrayArrayMutationsSetStateUnraidArray.State, and is useful for accessing the field via an interface.
+func (v *SetArrayStateArrayArrayMutationsSetStateUnraidArray) GetState() ArrayState { return v.State }
+
+// SetArrayStateResponse is returned by SetArrayState on success.
+type SetArrayStateResponse struct {
+	Array SetArrayStateArrayArrayMutations `json:"array"`
+}
+
+// GetArray returns SetArrayStateResponse.Array, and is useful for accessing the field via an interface.
+func (v *SetArrayStateResponse) GetArray() SetArrayStateArrayArrayMutations { return v.Array }
 
 // StartDockerContainerDockerDockerMutations includes the requested fields of the GraphQL type DockerMutations.
 type StartDockerContainerDockerDockerMutations struct {
@@ -579,6 +831,14 @@ type __ResumeVmInput struct {
 // GetId returns __ResumeVmInput.Id, and is useful for accessing the field via an interface.
 func (v *__ResumeVmInput) GetId() string { return v.Id }
 
+// __SetArrayStateInput is used internally by genqlient
+type __SetArrayStateInput struct {
+	DesiredState ArrayStateInputState `json:"desiredState"`
+}
+
+// GetDesiredState returns __SetArrayStateInput.DesiredState, and is useful for accessing the field via an interface.
+func (v *__SetArrayStateInput) GetDesiredState() ArrayStateInputState { return v.DesiredState }
+
 // __StartDockerContainerInput is used internally by genqlient
 type __StartDockerContainerInput struct {
 	Id string `json:"id"`
@@ -650,6 +910,65 @@ func ForceStopVm(
 	}
 
 	data_ = &ForceStopVmResponse{}
+	resp_ := &graphql.Response{Data: data_}
+
+	err_ = client_.MakeRequest(
+		ctx_,
+		req_,
+		resp_,
+	)
+
+	return data_, err_
+}
+
+// The query executed by GetArray.
+const GetArray_Operation = `
+query GetArray {
+	array {
+		id
+		state
+		parities {
+			id
+			name
+			device
+			status
+			size
+			isSpinning
+		}
+		disks {
+			id
+			name
+			device
+			status
+			size
+			fsSize
+			fsFree
+			isSpinning
+		}
+		caches {
+			id
+			name
+			device
+			status
+			size
+			fsSize
+			fsFree
+			isSpinning
+		}
+	}
+}
+`
+
+func GetArray(
+	ctx_ context.Context,
+	client_ graphql.Client,
+) (data_ *GetArrayResponse, err_ error) {
+	req_ := &graphql.Request{
+		OpName: "GetArray",
+		Query:  GetArray_Operation,
+	}
+
+	data_ = &GetArrayResponse{}
 	resp_ := &graphql.Response{Data: data_}
 
 	err_ = client_.MakeRequest(
@@ -901,6 +1220,43 @@ func ResumeVm(
 	}
 
 	data_ = &ResumeVmResponse{}
+	resp_ := &graphql.Response{Data: data_}
+
+	err_ = client_.MakeRequest(
+		ctx_,
+		req_,
+		resp_,
+	)
+
+	return data_, err_
+}
+
+// The mutation executed by SetArrayState.
+const SetArrayState_Operation = `
+mutation SetArrayState ($desiredState: ArrayStateInputState!) {
+	array {
+		setState(input: {desiredState:$desiredState}) {
+			id
+			state
+		}
+	}
+}
+`
+
+func SetArrayState(
+	ctx_ context.Context,
+	client_ graphql.Client,
+	desiredState ArrayStateInputState,
+) (data_ *SetArrayStateResponse, err_ error) {
+	req_ := &graphql.Request{
+		OpName: "SetArrayState",
+		Query:  SetArrayState_Operation,
+		Variables: &__SetArrayStateInput{
+			DesiredState: desiredState,
+		},
+	}
+
+	data_ = &SetArrayStateResponse{}
 	resp_ := &graphql.Response{Data: data_}
 
 	err_ = client_.MakeRequest(

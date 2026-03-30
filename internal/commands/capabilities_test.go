@@ -8,7 +8,8 @@ import (
 
 func fullCaps() *client.SchemaCapabilities {
 	return &client.SchemaCapabilities{
-		QueryFields:     map[string]bool{"docker": true, "vms": true},
+		QueryFields:     map[string]bool{"array": true, "docker": true, "vms": true},
+		ArrayMutations:  map[string]bool{"setState": true},
 		DockerMutations: map[string]bool{"start": true, "stop": true, "pause": true, "unpause": true, "updateContainer": true},
 		VmMutations:     map[string]bool{"start": true, "stop": true, "forceStop": true, "pause": true, "resume": true, "reboot": true, "reset": true},
 	}
@@ -22,6 +23,9 @@ func TestIsCommandSupported(t *testing.T) {
 		want bool
 	}{
 		// All supported on a fully-capable server
+		{"array status - full caps", fullCaps(), "array status", true},
+		{"array start - full caps", fullCaps(), "array start", true},
+		{"array stop - full caps", fullCaps(), "array stop", true},
 		{"docker list - full caps", fullCaps(), "docker list", true},
 		{"docker start - full caps", fullCaps(), "docker start", true},
 		{"docker stop - full caps", fullCaps(), "docker stop", true},
@@ -37,6 +41,26 @@ func TestIsCommandSupported(t *testing.T) {
 		{"vm resume - full caps", fullCaps(), "vm resume", true},
 		{"vm reboot - full caps", fullCaps(), "vm reboot", true},
 		{"vm reset - full caps", fullCaps(), "vm reset", true},
+
+		// Array query absent
+		{"array status - array query absent", &client.SchemaCapabilities{
+			QueryFields:    map[string]bool{"docker": true, "vms": true},
+			ArrayMutations: fullCaps().ArrayMutations,
+		}, "array status", false},
+		{"array start - array query absent", &client.SchemaCapabilities{
+			QueryFields:    map[string]bool{"docker": true, "vms": true},
+			ArrayMutations: fullCaps().ArrayMutations,
+		}, "array start", false},
+
+		// ArrayMutations absent
+		{"array start - ArrayMutations nil", &client.SchemaCapabilities{
+			QueryFields:    map[string]bool{"array": true, "docker": true, "vms": true},
+			ArrayMutations: nil,
+		}, "array start", false},
+		{"array stop - ArrayMutations nil", &client.SchemaCapabilities{
+			QueryFields:    map[string]bool{"array": true, "docker": true, "vms": true},
+			ArrayMutations: nil,
+		}, "array stop", false},
 
 		// VmMutations type absent
 		{"vm list - vms query absent", &client.SchemaCapabilities{

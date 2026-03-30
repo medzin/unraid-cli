@@ -55,6 +55,7 @@ func NewRootCmd() *cobra.Command {
 	})
 
 	rootCmd.AddCommand(newConfigCmd())
+	rootCmd.AddCommand(newArrayCmd(resolveClient))
 	rootCmd.AddCommand(newDockerCmd(resolveClient))
 	rootCmd.AddCommand(newVmCmd(resolveClient))
 	rootCmd.AddCommand(newCapabilitiesCmd(resolveIntrospect))

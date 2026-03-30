@@ -18,6 +18,7 @@ type conditionScope int
 
 const (
 	scopeQuery conditionScope = iota
+	scopeArrayMutations
 	scopeDockerMutations
 	scopeVmMutations
 )
@@ -28,6 +29,24 @@ type capabilityCondition struct {
 }
 
 var commandCapabilities = []capabilityCheck{
+	{
+		command:    "array status",
+		conditions: []capabilityCondition{{scopeQuery, "array"}},
+	},
+	{
+		command: "array start",
+		conditions: []capabilityCondition{
+			{scopeQuery, "array"},
+			{scopeArrayMutations, "setState"},
+		},
+	},
+	{
+		command: "array stop",
+		conditions: []capabilityCondition{
+			{scopeQuery, "array"},
+			{scopeArrayMutations, "setState"},
+		},
+	},
 	{
 		command:    "docker list",
 		conditions: []capabilityCondition{{scopeQuery, "docker"}},
@@ -136,6 +155,8 @@ func isCommandSupported(caps *client.SchemaCapabilities, check capabilityCheck) 
 		switch cond.scope {
 		case scopeQuery:
 			fields = caps.QueryFields
+		case scopeArrayMutations:
+			fields = caps.ArrayMutations
 		case scopeDockerMutations:
 			fields = caps.DockerMutations
 		case scopeVmMutations:

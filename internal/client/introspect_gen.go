@@ -6,6 +6,8 @@ package client
 type SchemaCapabilities struct {
 	// QueryFields maps top-level Query field names that exist on this server.
 	QueryFields map[string]bool
+	// ArrayMutations maps ArrayMutations field names. Nil if not supported.
+	ArrayMutations map[string]bool
 	// DockerMutations maps DockerMutations field names. Nil if not supported.
 	DockerMutations map[string]bool
 	// VmMutations maps VmMutations field names. Nil if not supported.
@@ -14,6 +16,7 @@ type SchemaCapabilities struct {
 
 // introspectionQuery fetches the mutation type fields used by this CLI.
 const introspectionQuery = `{
+  arrayMutations: __type(name: "ArrayMutations") { fields { name } }
   dockerMutations: __type(name: "DockerMutations") { fields { name } }
   vmMutations: __type(name: "VmMutations") { fields { name } }
   schema: __schema { queryType { fields { name } } }
@@ -29,6 +32,7 @@ type introspectTypeResult struct {
 
 type introspectResponse struct {
 	Data struct {
+		ArrayMutations  *introspectTypeResult `json:"arrayMutations"`
 		DockerMutations *introspectTypeResult `json:"dockerMutations"`
 		VmMutations     *introspectTypeResult `json:"vmMutations"`
 		Schema          struct {
@@ -46,6 +50,7 @@ type introspectResponse struct {
 func parseCapabilities(r introspectResponse) *SchemaCapabilities {
 	return &SchemaCapabilities{
 		QueryFields:     fieldsToSet(r.Data.Schema.QueryType.Fields),
+		ArrayMutations:  typeToSet(r.Data.ArrayMutations),
 		DockerMutations: typeToSet(r.Data.DockerMutations),
 		VmMutations:     typeToSet(r.Data.VmMutations),
 	}

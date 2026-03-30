@@ -1,0 +1,34 @@
+query GetArray {
+  array {
+    id
+    state
+    parities {
+      id
+      name
+      device
+      status
+      size
+      isSpinning
+    }
+    disks {
+      id
+      name
+      device
+      status
+      size
+      fsSize
+      fsFree
+      isSpinning
+    }
+    caches {
+      id
+      name
+      device
+      status
+      size
+      fsSize
+      fsFree
+      isSpinning
+    }
+  }
+}

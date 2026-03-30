@@ -86,6 +86,21 @@ The CLI resolves server settings in the following order
 
 ## Commands
 
+### Array
+
+Manage the Unraid storage array.
+
+```bash
+# Show array status and disk list
+unraid array status
+
+# Start the array
+unraid array start
+
+# Stop the array
+unraid array stop
+```
+
 ### Docker
 
 Manage Docker containers on your Unraid server.
@@ -170,6 +185,9 @@ Capabilities for https://192.168.1.100
 
 COMMAND               STATUS
 ----------------------------------------
+array status          supported
+array start           supported
+array stop            supported
 docker list           supported
 docker start          supported
 docker stop           supported

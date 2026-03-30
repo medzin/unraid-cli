@@ -1,0 +1,8 @@
+mutation SetArrayState($desiredState: ArrayStateInputState!) {
+  array {
+    setState(input: { desiredState: $desiredState }) {
+      id
+      state
+    }
+  }
+}
