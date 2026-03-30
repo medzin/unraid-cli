@@ -1,0 +1,10 @@
+mutation PauseDockerContainer($id: PrefixedID!) {
+  docker {
+    pause(id: $id) {
+      id
+      names
+      state
+      status
+    }
+  }
+}

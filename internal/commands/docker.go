@@ -31,10 +31,16 @@ func newDockerCmd(preRun func(*cobra.Command, []string) error) *cobra.Command {
 	restartCmd := newDockerRestartCmd()
 	restartCmd.PreRunE = preRun
 
+	pauseCmd := newDockerPauseCmd()
+	pauseCmd.PreRunE = preRun
+
+	unpauseCmd := newDockerUnpauseCmd()
+	unpauseCmd.PreRunE = preRun
+
 	updateCmd := newDockerUpdateCmd()
 	updateCmd.PreRunE = preRun
 
-	cmd.AddCommand(listCmd, startCmd, stopCmd, restartCmd, updateCmd)
+	cmd.AddCommand(listCmd, startCmd, stopCmd, restartCmd, pauseCmd, unpauseCmd, updateCmd)
 
 	return cmd
 }
@@ -85,6 +91,28 @@ func newDockerRestartCmd() *cobra.Command {
 		Args:  cobra.ExactArgs(1),
 		RunE: func(cmd *cobra.Command, args []string) error {
 			return restartContainer(cmd.Context(), getClient(cmd.Context()), args[0])
+		},
+	}
+}
+
+func newDockerPauseCmd() *cobra.Command {
+	return &cobra.Command{
+		Use:   "pause <name>",
+		Short: "Pause a Docker container",
+		Args:  cobra.ExactArgs(1),
+		RunE: func(cmd *cobra.Command, args []string) error {
+			return pauseContainer(cmd.Context(), getClient(cmd.Context()), args[0])
+		},
+	}
+}
+
+func newDockerUnpauseCmd() *cobra.Command {
+	return &cobra.Command{
+		Use:   "unpause <name>",
+		Short: "Unpause a Docker container",
+		Args:  cobra.ExactArgs(1),
+		RunE: func(cmd *cobra.Command, args []string) error {
+			return unpauseContainer(cmd.Context(), getClient(cmd.Context()), args[0])
 		},
 	}
 }
@@ -153,6 +181,40 @@ func stopContainer(ctx context.Context, c graphql.Client, name string) error {
 	}
 
 	state := strings.ToLower(string(resp.Docker.Stop.State))
+	fmt.Printf("Container '%s' is now %s.\n", name, state)
+	return nil
+}
+
+func pauseContainer(ctx context.Context, c graphql.Client, name string) error {
+	id, err := resolveContainerID(ctx, c, name)
+	if err != nil {
+		return err
+	}
+
+	fmt.Printf("Pausing container '%s'...\n", name)
+	resp, err := client.PauseDockerContainer(ctx, c, id)
+	if err != nil {
+		return err
+	}
+
+	state := strings.ToLower(string(resp.Docker.Pause.State))
+	fmt.Printf("Container '%s' is now %s.\n", name, state)
+	return nil
+}
+
+func unpauseContainer(ctx context.Context, c graphql.Client, name string) error {
+	id, err := resolveContainerID(ctx, c, name)
+	if err != nil {
+		return err
+	}
+
+	fmt.Printf("Unpausing container '%s'...\n", name)
+	resp, err := client.UnpauseDockerContainer(ctx, c, id)
+	if err != nil {
+		return err
+	}
+
+	state := strings.ToLower(string(resp.Docker.Unpause.State))
 	fmt.Printf("Container '%s' is now %s.\n", name, state)
 	return nil
 }

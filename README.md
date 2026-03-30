@@ -107,6 +107,12 @@ unraid docker stop <name>
 # Restart a container
 unraid docker restart <name>
 
+# Pause a container
+unraid docker pause <name>
+
+# Unpause a container
+unraid docker unpause <name>
+
 # Update a container to the latest image
 unraid docker update <name>
 ```

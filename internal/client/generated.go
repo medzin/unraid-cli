@@ -165,6 +165,53 @@ func (v *GetVmsVmsDomainsVmDomain) GetName() *string { return v.Name }
 // GetState returns GetVmsVmsDomainsVmDomain.State, and is useful for accessing the field via an interface.
 func (v *GetVmsVmsDomainsVmDomain) GetState() VmState { return v.State }
 
+// PauseDockerContainerDockerDockerMutations includes the requested fields of the GraphQL type DockerMutations.
+type PauseDockerContainerDockerDockerMutations struct {
+	// Pause (Suspend) a container
+	Pause PauseDockerContainerDockerDockerMutationsPauseDockerContainer `json:"pause"`
+}
+
+// GetPause returns PauseDockerContainerDockerDockerMutations.Pause, and is useful for accessing the field via an interface.
+func (v *PauseDockerContainerDockerDockerMutations) GetPause() PauseDockerContainerDockerDockerMutationsPauseDockerContainer {
+	return v.Pause
+}
+
+// PauseDockerContainerDockerDockerMutationsPauseDockerContainer includes the requested fields of the GraphQL type DockerContainer.
+type PauseDockerContainerDockerDockerMutationsPauseDockerContainer struct {
+	Id     string         `json:"id"`
+	Names  []string       `json:"names"`
+	State  ContainerState `json:"state"`
+	Status string         `json:"status"`
+}
+
+// GetId returns PauseDockerContainerDockerDockerMutationsPauseDockerContainer.Id, and is useful for accessing the field via an interface.
+func (v *PauseDockerContainerDockerDockerMutationsPauseDockerContainer) GetId() string { return v.Id }
+
+// GetNames returns PauseDockerContainerDockerDockerMutationsPauseDockerContainer.Names, and is useful for accessing the field via an interface.
+func (v *PauseDockerContainerDockerDockerMutationsPauseDockerContainer) GetNames() []string {
+	return v.Names
+}
+
+// GetState returns PauseDockerContainerDockerDockerMutationsPauseDockerContainer.State, and is useful for accessing the field via an interface.
+func (v *PauseDockerContainerDockerDockerMutationsPauseDockerContainer) GetState() ContainerState {
+	return v.State
+}
+
+// GetStatus returns PauseDockerContainerDockerDockerMutationsPauseDockerContainer.Status, and is useful for accessing the field via an interface.
+func (v *PauseDockerContainerDockerDockerMutationsPauseDockerContainer) GetStatus() string {
+	return v.Status
+}
+
+// PauseDockerContainerResponse is returned by PauseDockerContainer on success.
+type PauseDockerContainerResponse struct {
+	Docker PauseDockerContainerDockerDockerMutations `json:"docker"`
+}
+
+// GetDocker returns PauseDockerContainerResponse.Docker, and is useful for accessing the field via an interface.
+func (v *PauseDockerContainerResponse) GetDocker() PauseDockerContainerDockerDockerMutations {
+	return v.Docker
+}
+
 // PauseVmResponse is returned by PauseVm on success.
 type PauseVmResponse struct {
 	Vm PauseVmVmVmMutations `json:"vm"`
@@ -361,6 +408,55 @@ type StopVmVmVmMutations struct {
 // GetStop returns StopVmVmVmMutations.Stop, and is useful for accessing the field via an interface.
 func (v *StopVmVmVmMutations) GetStop() bool { return v.Stop }
 
+// UnpauseDockerContainerDockerDockerMutations includes the requested fields of the GraphQL type DockerMutations.
+type UnpauseDockerContainerDockerDockerMutations struct {
+	// Unpause (Resume) a container
+	Unpause UnpauseDockerContainerDockerDockerMutationsUnpauseDockerContainer `json:"unpause"`
+}
+
+// GetUnpause returns UnpauseDockerContainerDockerDockerMutations.Unpause, and is useful for accessing the field via an interface.
+func (v *UnpauseDockerContainerDockerDockerMutations) GetUnpause() UnpauseDockerContainerDockerDockerMutationsUnpauseDockerContainer {
+	return v.Unpause
+}
+
+// UnpauseDockerContainerDockerDockerMutationsUnpauseDockerContainer includes the requested fields of the GraphQL type DockerContainer.
+type UnpauseDockerContainerDockerDockerMutationsUnpauseDockerContainer struct {
+	Id     string         `json:"id"`
+	Names  []string       `json:"names"`
+	State  ContainerState `json:"state"`
+	Status string         `json:"status"`
+}
+
+// GetId returns UnpauseDockerContainerDockerDockerMutationsUnpauseDockerContainer.Id, and is useful for accessing the field via an interface.
+func (v *UnpauseDockerContainerDockerDockerMutationsUnpauseDockerContainer) GetId() string {
+	return v.Id
+}
+
+// GetNames returns UnpauseDockerContainerDockerDockerMutationsUnpauseDockerContainer.Names, and is useful for accessing the field via an interface.
+func (v *UnpauseDockerContainerDockerDockerMutationsUnpauseDockerContainer) GetNames() []string {
+	return v.Names
+}
+
+// GetState returns UnpauseDockerContainerDockerDockerMutationsUnpauseDockerContainer.State, and is useful for accessing the field via an interface.
+func (v *UnpauseDockerContainerDockerDockerMutationsUnpauseDockerContainer) GetState() ContainerState {
+	return v.State
+}
+
+// GetStatus returns UnpauseDockerContainerDockerDockerMutationsUnpauseDockerContainer.Status, and is useful for accessing the field via an interface.
+func (v *UnpauseDockerContainerDockerDockerMutationsUnpauseDockerContainer) GetStatus() string {
+	return v.Status
+}
+
+// UnpauseDockerContainerResponse is returned by UnpauseDockerContainer on success.
+type UnpauseDockerContainerResponse struct {
+	Docker UnpauseDockerContainerDockerDockerMutations `json:"docker"`
+}
+
+// GetDocker returns UnpauseDockerContainerResponse.Docker, and is useful for accessing the field via an interface.
+func (v *UnpauseDockerContainerResponse) GetDocker() UnpauseDockerContainerDockerDockerMutations {
+	return v.Docker
+}
+
 // UpdateDockerContainerDockerDockerMutations includes the requested fields of the GraphQL type DockerMutations.
 type UpdateDockerContainerDockerDockerMutations struct {
 	// Update a container to the latest image
@@ -443,6 +539,14 @@ type __ForceStopVmInput struct {
 // GetId returns __ForceStopVmInput.Id, and is useful for accessing the field via an interface.
 func (v *__ForceStopVmInput) GetId() string { return v.Id }
 
+// __PauseDockerContainerInput is used internally by genqlient
+type __PauseDockerContainerInput struct {
+	Id string `json:"id"`
+}
+
+// GetId returns __PauseDockerContainerInput.Id, and is useful for accessing the field via an interface.
+func (v *__PauseDockerContainerInput) GetId() string { return v.Id }
+
 // __PauseVmInput is used internally by genqlient
 type __PauseVmInput struct {
 	Id string `json:"id"`
@@ -506,6 +610,14 @@ type __StopVmInput struct {
 
 // GetId returns __StopVmInput.Id, and is useful for accessing the field via an interface.
 func (v *__StopVmInput) GetId() string { return v.Id }
+
+// __UnpauseDockerContainerInput is used internally by genqlient
+type __UnpauseDockerContainerInput struct {
+	Id string `json:"id"`
+}
+
+// GetId returns __UnpauseDockerContainerInput.Id, and is useful for accessing the field via an interface.
+func (v *__UnpauseDockerContainerInput) GetId() string { return v.Id }
 
 // __UpdateDockerContainerInput is used internally by genqlient
 type __UpdateDockerContainerInput struct {
@@ -614,6 +726,45 @@ func GetVms(
 	}
 
 	data_ = &GetVmsResponse{}
+	resp_ := &graphql.Response{Data: data_}
+
+	err_ = client_.MakeRequest(
+		ctx_,
+		req_,
+		resp_,
+	)
+
+	return data_, err_
+}
+
+// The mutation executed by PauseDockerContainer.
+const PauseDockerContainer_Operation = `
+mutation PauseDockerContainer ($id: PrefixedID!) {
+	docker {
+		pause(id: $id) {
+			id
+			names
+			state
+			status
+		}
+	}
+}
+`
+
+func PauseDockerContainer(
+	ctx_ context.Context,
+	client_ graphql.Client,
+	id string,
+) (data_ *PauseDockerContainerResponse, err_ error) {
+	req_ := &graphql.Request{
+		OpName: "PauseDockerContainer",
+		Query:  PauseDockerContainer_Operation,
+		Variables: &__PauseDockerContainerInput{
+			Id: id,
+		},
+	}
+
+	data_ = &PauseDockerContainerResponse{}
 	resp_ := &graphql.Response{Data: data_}
 
 	err_ = client_.MakeRequest(
@@ -896,6 +1047,45 @@ func StopVm(
 	}
 
 	data_ = &StopVmResponse{}
+	resp_ := &graphql.Response{Data: data_}
+
+	err_ = client_.MakeRequest(
+		ctx_,
+		req_,
+		resp_,
+	)
+
+	return data_, err_
+}
+
+// The mutation executed by UnpauseDockerContainer.
+const UnpauseDockerContainer_Operation = `
+mutation UnpauseDockerContainer ($id: PrefixedID!) {
+	docker {
+		unpause(id: $id) {
+			id
+			names
+			state
+			status
+		}
+	}
+}
+`
+
+func UnpauseDockerContainer(
+	ctx_ context.Context,
+	client_ graphql.Client,
+	id string,
+) (data_ *UnpauseDockerContainerResponse, err_ error) {
+	req_ := &graphql.Request{
+		OpName: "UnpauseDockerContainer",
+		Query:  UnpauseDockerContainer_Operation,
+		Variables: &__UnpauseDockerContainerInput{
+			Id: id,
+		},
+	}
+
+	data_ = &UnpauseDockerContainerResponse{}
 	resp_ := &graphql.Response{Data: data_}
 
 	err_ = client_.MakeRequest(

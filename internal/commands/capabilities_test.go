@@ -9,7 +9,7 @@ import (
 func fullCaps() *client.SchemaCapabilities {
 	return &client.SchemaCapabilities{
 		QueryFields:     map[string]bool{"docker": true, "vms": true},
-		DockerMutations: map[string]bool{"start": true, "stop": true, "updateContainer": true},
+		DockerMutations: map[string]bool{"start": true, "stop": true, "pause": true, "unpause": true, "updateContainer": true},
 		VmMutations:     map[string]bool{"start": true, "stop": true, "forceStop": true, "pause": true, "resume": true, "reboot": true, "reset": true},
 	}
 }
@@ -26,6 +26,8 @@ func TestIsCommandSupported(t *testing.T) {
 		{"docker start - full caps", fullCaps(), "docker start", true},
 		{"docker stop - full caps", fullCaps(), "docker stop", true},
 		{"docker restart - full caps", fullCaps(), "docker restart", true},
+		{"docker pause - full caps", fullCaps(), "docker pause", true},
+		{"docker unpause - full caps", fullCaps(), "docker unpause", true},
 		{"docker update - full caps", fullCaps(), "docker update", true},
 		{"vm list - full caps", fullCaps(), "vm list", true},
 		{"vm start - full caps", fullCaps(), "vm start", true},
@@ -71,6 +73,18 @@ func TestIsCommandSupported(t *testing.T) {
 			DockerMutations: fullCaps().DockerMutations,
 			VmMutations:     map[string]bool{"start": true, "stop": true},
 		}, "vm force-stop", false},
+
+		// pause / unpause absent
+		{"docker pause - pause absent", &client.SchemaCapabilities{
+			QueryFields:     map[string]bool{"docker": true},
+			DockerMutations: map[string]bool{"start": true, "stop": true},
+			VmMutations:     fullCaps().VmMutations,
+		}, "docker pause", false},
+		{"docker unpause - unpause absent", &client.SchemaCapabilities{
+			QueryFields:     map[string]bool{"docker": true},
+			DockerMutations: map[string]bool{"start": true, "stop": true},
+			VmMutations:     fullCaps().VmMutations,
+		}, "docker unpause", false},
 
 		// docker restart requires both start and stop
 		{"docker restart - stop absent", &client.SchemaCapabilities{

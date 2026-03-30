@@ -55,6 +55,20 @@ var commandCapabilities = []capabilityCheck{
 		},
 	},
 	{
+		command: "docker pause",
+		conditions: []capabilityCondition{
+			{scopeQuery, "docker"},
+			{scopeDockerMutations, "pause"},
+		},
+	},
+	{
+		command: "docker unpause",
+		conditions: []capabilityCondition{
+			{scopeQuery, "docker"},
+			{scopeDockerMutations, "unpause"},
+		},
+	},
+	{
 		command: "docker update",
 		conditions: []capabilityCondition{
 			{scopeQuery, "docker"},
