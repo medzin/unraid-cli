@@ -2,13 +2,34 @@ package commands
 
 import (
 	"context"
+	"io"
+	"os"
 
 	"github.com/Khan/genqlient/graphql"
 
 	"github.com/medzin/unraid-cli/internal/client"
 )
 
-const introspectionClientKey contextKey = "introspection_client"
+const (
+	introspectionClientKey contextKey = "introspection_client"
+	outputFmtKey           contextKey = "output_fmt"
+	outputWriterKey        contextKey = "output_writer"
+)
+
+func withOutputFormat(ctx context.Context, f outputFmt) context.Context {
+	return context.WithValue(ctx, outputFmtKey, f)
+}
+
+func withOutputWriter(ctx context.Context, w io.Writer) context.Context {
+	return context.WithValue(ctx, outputWriterKey, w)
+}
+
+func getOutputWriter(ctx context.Context) io.Writer {
+	if w, ok := ctx.Value(outputWriterKey).(io.Writer); ok {
+		return w
+	}
+	return os.Stdout
+}
 
 func withClient(ctx context.Context, c graphql.Client) context.Context {
 	return context.WithValue(ctx, clientKey, c)

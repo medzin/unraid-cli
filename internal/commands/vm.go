@@ -4,6 +4,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"log"
 	"strings"
 
 	"github.com/Khan/genqlient/graphql"
@@ -22,31 +23,19 @@ func newVmCmd(preRun func(*cobra.Command, []string) error) *cobra.Command {
 		Short: "Virtual machine management",
 	}
 
-	listCmd := newVmListCmd()
-	listCmd.PreRunE = preRun
-
-	startCmd := newVmStartCmd()
-	startCmd.PreRunE = preRun
-
-	stopCmd := newVmStopCmd()
-	stopCmd.PreRunE = preRun
-
-	forceStopCmd := newVmForceStopCmd()
-	forceStopCmd.PreRunE = preRun
-
-	pauseCmd := newVmPauseCmd()
-	pauseCmd.PreRunE = preRun
-
-	resumeCmd := newVmResumeCmd()
-	resumeCmd.PreRunE = preRun
-
-	rebootCmd := newVmRebootCmd()
-	rebootCmd.PreRunE = preRun
-
-	resetCmd := newVmResetCmd()
-	resetCmd.PreRunE = preRun
-
-	cmd.AddCommand(listCmd, startCmd, stopCmd, forceStopCmd, pauseCmd, resumeCmd, rebootCmd, resetCmd)
+	cmd.AddCommand(
+		newVmListCmd(),
+		newVmStartCmd(),
+		newVmStopCmd(),
+		newVmForceStopCmd(),
+		newVmPauseCmd(),
+		newVmResumeCmd(),
+		newVmRebootCmd(),
+		newVmResetCmd(),
+	)
+	for _, sub := range cmd.Commands() {
+		sub.PreRunE = preRun
+	}
 
 	return cmd
 }
@@ -172,14 +161,13 @@ func vmAction(ctx context.Context, c graphql.Client, name, presentVerb, pastVerb
 		return err
 	}
 
-	fmt.Printf("%s VM '%s'...\n", presentVerb, name)
+	log.Printf("%s VM '%s'...", presentVerb, name)
 
 	if err := mutation(ctx, c, id); err != nil {
 		return err
 	}
 
-	fmt.Printf("VM '%s' %s command sent.\n", name, pastVerb)
-	return nil
+	return printAction(ctx, fmt.Sprintf("VM '%s' %s command sent.", name, pastVerb))
 }
 
 func resolveVmID(ctx context.Context, c graphql.Client, name string) (string, error) {
@@ -217,29 +205,40 @@ func listVms(ctx context.Context, c graphql.Client, showAll bool) error {
 
 	domains := filterVmsByState(resp.Vms.Domains, showAll)
 
-	if len(domains) == 0 {
-		if showAll {
-			fmt.Println("No VMs found.")
-		} else {
-			fmt.Println("No running VMs found. Use --all to show all VMs.")
+	if domains == nil {
+		domains = []vmDomain{}
+	}
+
+	return render(ctx, domains, func() error {
+		w := getOutputWriter(ctx)
+		if len(domains) == 0 {
+			if showAll {
+				_, err := fmt.Fprintln(w, "No VMs found.")
+				return err
+			}
+			_, err := fmt.Fprintln(w, "No running VMs found. Use --all to show all VMs.")
+			return err
 		}
+
+		if _, err := fmt.Fprintf(w, "%-30s %-12s\n", "NAME", "STATE"); err != nil {
+			return err
+		}
+		if _, err := fmt.Fprintln(w, strings.Repeat("-", 42)); err != nil {
+			return err
+		}
+
+		for _, vm := range domains {
+			name := "unnamed"
+			if vm.Name != nil {
+				name = *vm.Name
+			}
+			if _, err := fmt.Fprintf(w, "%-30s %-12s\n", truncate(name, 29), formatVmState(vm.State)); err != nil {
+				return err
+			}
+		}
+
 		return nil
-	}
-
-	fmt.Printf("%-30s %-12s\n", "NAME", "STATE")
-	fmt.Println(strings.Repeat("-", 42))
-
-	for _, vm := range domains {
-		name := "unnamed"
-		if vm.Name != nil {
-			name = *vm.Name
-		}
-		state := formatVmState(vm.State)
-
-		fmt.Printf("%-30s %-12s\n", truncate(name, 29), state)
-	}
-
-	return nil
+	})
 }
 
 func filterVmsByState(domains []vmDomain, showAll bool) []vmDomain {

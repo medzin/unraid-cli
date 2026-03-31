@@ -2,6 +2,8 @@ package commands
 
 import (
 	"fmt"
+	"io"
+	"log"
 	"strings"
 
 	"github.com/spf13/cobra"
@@ -15,16 +17,10 @@ func newArrayCmd(preRun func(*cobra.Command, []string) error) *cobra.Command {
 		Short: "Array management",
 	}
 
-	startCmd := newArrayStartCmd()
-	startCmd.PreRunE = preRun
-
-	stopCmd := newArrayStopCmd()
-	stopCmd.PreRunE = preRun
-
-	statusCmd := newArrayStatusCmd()
-	statusCmd.PreRunE = preRun
-
-	cmd.AddCommand(startCmd, stopCmd, statusCmd)
+	cmd.AddCommand(newArrayStartCmd(), newArrayStopCmd(), newArrayStatusCmd())
+	for _, sub := range cmd.Commands() {
+		sub.PreRunE = preRun
+	}
 
 	return cmd
 }
@@ -43,13 +39,12 @@ func newArraySetStateCmd(use, short, msg string, state client.ArrayStateInputSta
 		Short: short,
 		Args:  cobra.NoArgs,
 		RunE: func(cmd *cobra.Command, _ []string) error {
-			fmt.Println(msg)
+			log.Println(msg)
 			resp, err := client.SetArrayState(cmd.Context(), getClient(cmd.Context()), state)
 			if err != nil {
 				return err
 			}
-			fmt.Printf("Array is now %s.\n", formatArrayState(resp.Array.SetState.State))
-			return nil
+			return printAction(cmd.Context(), fmt.Sprintf("Array is now %s.", formatArrayState(resp.Array.SetState.State)))
 		},
 	}
 }
@@ -65,12 +60,22 @@ func newArrayStatusCmd() *cobra.Command {
 				return err
 			}
 			a := resp.Array
-			fmt.Printf("State:  %s\n", formatArrayState(a.State))
-			fmt.Println()
-			printArrayDisks("Parity", diskSlice(ptrSlice(a.Parities)))
-			printArrayDisks("Data", diskSlice(ptrSlice(a.Disks)))
-			printArrayDisks("Cache", diskSlice(ptrSlice(a.Caches)))
-			return nil
+			return render(cmd.Context(), a, func() error {
+				w := getOutputWriter(cmd.Context())
+				if _, err := fmt.Fprintf(w, "State:  %s\n", formatArrayState(a.State)); err != nil {
+					return err
+				}
+				if _, err := fmt.Fprintln(w); err != nil {
+					return err
+				}
+				if err := printArrayDisks(w, "Parity", diskSlice(ptrSlice(a.Parities))); err != nil {
+					return err
+				}
+				if err := printArrayDisks(w, "Data", diskSlice(ptrSlice(a.Disks))); err != nil {
+					return err
+				}
+				return printArrayDisks(w, "Cache", diskSlice(ptrSlice(a.Caches)))
+			})
 		},
 	}
 }
@@ -111,13 +116,19 @@ func ptrSlice[T any](s []T) []*T {
 	return out
 }
 
-func printArrayDisks(label string, disks []arrayDiskRow) {
+func printArrayDisks(w io.Writer, label string, disks []arrayDiskRow) error {
 	if len(disks) == 0 {
-		return
+		return nil
 	}
-	fmt.Printf("%s disks:\n", label)
-	fmt.Printf("  %-16s %-10s %-22s %-12s %s\n", "NAME", "DEVICE", "STATUS", "SIZE", "SPINNING")
-	fmt.Println("  " + strings.Repeat("-", 72))
+	if _, err := fmt.Fprintf(w, "%s disks:\n", label); err != nil {
+		return err
+	}
+	if _, err := fmt.Fprintf(w, "  %-16s %-10s %-22s %-12s %s\n", "NAME", "DEVICE", "STATUS", "SIZE", "SPINNING"); err != nil {
+		return err
+	}
+	if _, err := fmt.Fprintln(w, "  "+strings.Repeat("-", 72)); err != nil {
+		return err
+	}
 	for _, d := range disks {
 		spinning := "—"
 		if d.isSpinning != nil {
@@ -127,15 +138,18 @@ func printArrayDisks(label string, disks []arrayDiskRow) {
 				spinning = "no"
 			}
 		}
-		fmt.Printf("  %-16s %-10s %-22s %-12s %s\n",
+		if _, err := fmt.Fprintf(w, "  %-16s %-10s %-22s %-12s %s\n",
 			truncate(d.name, 15),
 			truncate(d.device, 9),
 			d.status,
 			formatBytes(d.size),
 			spinning,
-		)
+		); err != nil {
+			return err
+		}
 	}
-	fmt.Println()
+	_, err := fmt.Fprintln(w)
+	return err
 }
 
 func formatArrayState(state client.ArrayState) string {

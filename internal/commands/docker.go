@@ -3,6 +3,7 @@ package commands
 import (
 	"context"
 	"fmt"
+	"log"
 	"strings"
 
 	"github.com/Khan/genqlient/graphql"
@@ -19,28 +20,18 @@ func newDockerCmd(preRun func(*cobra.Command, []string) error) *cobra.Command {
 		Short: "Docker container management",
 	}
 
-	listCmd := newDockerListCmd()
-	listCmd.PreRunE = preRun
-
-	startCmd := newDockerStartCmd()
-	startCmd.PreRunE = preRun
-
-	stopCmd := newDockerStopCmd()
-	stopCmd.PreRunE = preRun
-
-	restartCmd := newDockerRestartCmd()
-	restartCmd.PreRunE = preRun
-
-	pauseCmd := newDockerPauseCmd()
-	pauseCmd.PreRunE = preRun
-
-	unpauseCmd := newDockerUnpauseCmd()
-	unpauseCmd.PreRunE = preRun
-
-	updateCmd := newDockerUpdateCmd()
-	updateCmd.PreRunE = preRun
-
-	cmd.AddCommand(listCmd, startCmd, stopCmd, restartCmd, pauseCmd, unpauseCmd, updateCmd)
+	cmd.AddCommand(
+		newDockerListCmd(),
+		newDockerStartCmd(),
+		newDockerStopCmd(),
+		newDockerRestartCmd(),
+		newDockerPauseCmd(),
+		newDockerUnpauseCmd(),
+		newDockerUpdateCmd(),
+	)
+	for _, sub := range cmd.Commands() {
+		sub.PreRunE = preRun
+	}
 
 	return cmd
 }
@@ -128,6 +119,21 @@ func newDockerUpdateCmd() *cobra.Command {
 	}
 }
 
+type containerMutationFunc func(ctx context.Context, c graphql.Client, id string) (string, error)
+
+func containerAction(ctx context.Context, c graphql.Client, name, presentVerb string, mutation containerMutationFunc) error {
+	id, err := resolveContainerID(ctx, c, name)
+	if err != nil {
+		return err
+	}
+	log.Printf("%s container '%s'...", presentVerb, name)
+	state, err := mutation(ctx, c, id)
+	if err != nil {
+		return err
+	}
+	return printAction(ctx, fmt.Sprintf("Container '%s' is now %s.", name, state))
+}
+
 func resolveContainerID(ctx context.Context, c graphql.Client, name string) (string, error) {
 	resp, err := client.GetDockerContainers(ctx, c)
 	if err != nil {
@@ -152,93 +158,56 @@ func findContainerID(containers []container, name string) (string, error) {
 }
 
 func startContainer(ctx context.Context, c graphql.Client, name string) error {
-	id, err := resolveContainerID(ctx, c, name)
-	if err != nil {
-		return err
-	}
-
-	fmt.Printf("Starting container '%s'...\n", name)
-	resp, err := client.StartDockerContainer(ctx, c, id)
-	if err != nil {
-		return err
-	}
-
-	state := strings.ToLower(string(resp.Docker.Start.State))
-	fmt.Printf("Container '%s' is now %s.\n", name, state)
-	return nil
+	return containerAction(ctx, c, name, "Starting", func(ctx context.Context, c graphql.Client, id string) (string, error) {
+		resp, err := client.StartDockerContainer(ctx, c, id)
+		if err != nil {
+			return "", err
+		}
+		return strings.ToLower(string(resp.Docker.Start.State)), nil
+	})
 }
 
 func stopContainer(ctx context.Context, c graphql.Client, name string) error {
-	id, err := resolveContainerID(ctx, c, name)
-	if err != nil {
-		return err
-	}
-
-	fmt.Printf("Stopping container '%s'...\n", name)
-	resp, err := client.StopDockerContainer(ctx, c, id)
-	if err != nil {
-		return err
-	}
-
-	state := strings.ToLower(string(resp.Docker.Stop.State))
-	fmt.Printf("Container '%s' is now %s.\n", name, state)
-	return nil
+	return containerAction(ctx, c, name, "Stopping", func(ctx context.Context, c graphql.Client, id string) (string, error) {
+		resp, err := client.StopDockerContainer(ctx, c, id)
+		if err != nil {
+			return "", err
+		}
+		return strings.ToLower(string(resp.Docker.Stop.State)), nil
+	})
 }
 
 func pauseContainer(ctx context.Context, c graphql.Client, name string) error {
-	id, err := resolveContainerID(ctx, c, name)
-	if err != nil {
-		return err
-	}
-
-	fmt.Printf("Pausing container '%s'...\n", name)
-	resp, err := client.PauseDockerContainer(ctx, c, id)
-	if err != nil {
-		return err
-	}
-
-	state := strings.ToLower(string(resp.Docker.Pause.State))
-	fmt.Printf("Container '%s' is now %s.\n", name, state)
-	return nil
+	return containerAction(ctx, c, name, "Pausing", func(ctx context.Context, c graphql.Client, id string) (string, error) {
+		resp, err := client.PauseDockerContainer(ctx, c, id)
+		if err != nil {
+			return "", err
+		}
+		return strings.ToLower(string(resp.Docker.Pause.State)), nil
+	})
 }
 
 func unpauseContainer(ctx context.Context, c graphql.Client, name string) error {
-	id, err := resolveContainerID(ctx, c, name)
-	if err != nil {
-		return err
-	}
-
-	fmt.Printf("Unpausing container '%s'...\n", name)
-	resp, err := client.UnpauseDockerContainer(ctx, c, id)
-	if err != nil {
-		return err
-	}
-
-	state := strings.ToLower(string(resp.Docker.Unpause.State))
-	fmt.Printf("Container '%s' is now %s.\n", name, state)
-	return nil
+	return containerAction(ctx, c, name, "Unpausing", func(ctx context.Context, c graphql.Client, id string) (string, error) {
+		resp, err := client.UnpauseDockerContainer(ctx, c, id)
+		if err != nil {
+			return "", err
+		}
+		return strings.ToLower(string(resp.Docker.Unpause.State)), nil
+	})
 }
 
 func restartContainer(ctx context.Context, c graphql.Client, name string) error {
-	id, err := resolveContainerID(ctx, c, name)
-	if err != nil {
-		return err
-	}
-
-	fmt.Printf("Restarting container '%s'...\n", name)
-	_, err = client.StopDockerContainer(ctx, c, id)
-	if err != nil {
-		return err
-	}
-
-	resp, err := client.StartDockerContainer(ctx, c, id)
-	if err != nil {
-		return err
-	}
-
-	state := strings.ToLower(string(resp.Docker.Start.State))
-	fmt.Printf("Container '%s' is now %s.\n", name, state)
-	return nil
+	return containerAction(ctx, c, name, "Restarting", func(ctx context.Context, c graphql.Client, id string) (string, error) {
+		if _, err := client.StopDockerContainer(ctx, c, id); err != nil {
+			return "", err
+		}
+		resp, err := client.StartDockerContainer(ctx, c, id)
+		if err != nil {
+			return "", err
+		}
+		return strings.ToLower(string(resp.Docker.Start.State)), nil
+	})
 }
 
 func updateContainer(ctx context.Context, c graphql.Client, name string) error {
@@ -247,15 +216,14 @@ func updateContainer(ctx context.Context, c graphql.Client, name string) error {
 		return err
 	}
 
-	fmt.Printf("Updating container '%s'...\n", name)
+	log.Printf("Updating container '%s'...", name)
 	resp, err := client.UpdateDockerContainer(ctx, c, id)
 	if err != nil {
 		return err
 	}
 
 	state := strings.ToLower(string(resp.Docker.UpdateContainer.State))
-	fmt.Printf("Container '%s' updated successfully (state: %s).\n", name, state)
-	return nil
+	return printAction(ctx, fmt.Sprintf("Container '%s' updated successfully (state: %s).", name, state))
 }
 
 func listContainers(ctx context.Context, c graphql.Client, showAll bool) error {
@@ -266,35 +234,45 @@ func listContainers(ctx context.Context, c graphql.Client, showAll bool) error {
 
 	containers := filterContainersByState(resp.Docker.Containers, showAll)
 
-	if len(containers) == 0 {
-		if showAll {
-			fmt.Println("No containers found.")
-		} else {
-			fmt.Println("No running containers found. Use --all to show all containers.")
+	if containers == nil {
+		containers = []container{}
+	}
+
+	return render(ctx, containers, func() error {
+		w := getOutputWriter(ctx)
+		if len(containers) == 0 {
+			if showAll {
+				_, err := fmt.Fprintln(w, "No containers found.")
+				return err
+			}
+			_, err := fmt.Fprintln(w, "No running containers found. Use --all to show all containers.")
+			return err
 		}
+
+		if _, err := fmt.Fprintf(w, "%-30s %-40s %-10s %-20s\n", "NAME", "IMAGE", "STATE", "STATUS"); err != nil {
+			return err
+		}
+		if _, err := fmt.Fprintln(w, strings.Repeat("-", 100)); err != nil {
+			return err
+		}
+
+		for _, ct := range containers {
+			name := "unnamed"
+			if len(ct.Names) > 0 {
+				name = strings.TrimPrefix(ct.Names[0], "/")
+			}
+			if _, err := fmt.Fprintf(w, "%-30s %-40s %-10s %-20s\n",
+				truncate(name, 29),
+				truncate(ct.Image, 39),
+				strings.ToLower(string(ct.State)),
+				truncate(ct.Status, 19),
+			); err != nil {
+				return err
+			}
+		}
+
 		return nil
-	}
-
-	fmt.Printf("%-30s %-40s %-10s %-20s\n", "NAME", "IMAGE", "STATE", "STATUS")
-	fmt.Println(strings.Repeat("-", 100))
-
-	for _, ct := range containers {
-		name := "unnamed"
-		if len(ct.Names) > 0 {
-			name = strings.TrimPrefix(ct.Names[0], "/")
-		}
-
-		state := strings.ToLower(string(ct.State))
-
-		fmt.Printf("%-30s %-40s %-10s %-20s\n",
-			truncate(name, 29),
-			truncate(ct.Image, 39),
-			state,
-			truncate(ct.Status, 19),
-		)
-	}
-
-	return nil
+	})
 }
 
 func filterContainersByState(containers []container, showAll bool) []container {

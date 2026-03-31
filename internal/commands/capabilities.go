@@ -182,19 +182,40 @@ func newCapabilitiesCmd(preRun func(*cobra.Command, []string) error) *cobra.Comm
 				return err
 			}
 
-			fmt.Printf("Capabilities for %s\n\n", ic.URL)
-			fmt.Printf("%-20s  %s\n", "COMMAND", "STATUS")
-			fmt.Println(strings.Repeat("-", 40))
-
-			for _, check := range commandCapabilities {
-				status := "not available"
-				if isCommandSupported(caps, check) {
-					status = "supported"
+			type capEntry struct {
+				Command   string `json:"command"`
+				Supported bool   `json:"supported"`
+			}
+			entries := make([]capEntry, len(commandCapabilities))
+			for i, check := range commandCapabilities {
+				entries[i] = capEntry{
+					Command:   check.command,
+					Supported: isCommandSupported(caps, check),
 				}
-				fmt.Printf("%-20s  %s\n", check.command, status)
 			}
 
-			return nil
+			return render(cmd.Context(), entries, func() error {
+				w := getOutputWriter(cmd.Context())
+				if _, err := fmt.Fprintf(w, "Capabilities for %s\n\n", ic.URL); err != nil {
+					return err
+				}
+				if _, err := fmt.Fprintf(w, "%-20s  %s\n", "COMMAND", "STATUS"); err != nil {
+					return err
+				}
+				if _, err := fmt.Fprintln(w, strings.Repeat("-", 40)); err != nil {
+					return err
+				}
+				for _, check := range commandCapabilities {
+					status := "not available"
+					if isCommandSupported(caps, check) {
+						status = "supported"
+					}
+					if _, err := fmt.Fprintf(w, "%-20s  %s\n", check.command, status); err != nil {
+						return err
+					}
+				}
+				return nil
+			})
 		},
 	}
 	return cmd

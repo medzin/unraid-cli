@@ -2,15 +2,42 @@
 package commands
 
 import (
+	"fmt"
+	"io"
+	"log"
+	"os"
+	"strings"
+
 	"github.com/spf13/cobra"
 
 	"github.com/medzin/unraid-cli/internal/client"
 	"github.com/medzin/unraid-cli/internal/config"
 )
 
+// Execute is the single entry point for the CLI. It handles JSON error output
+// when --output json is set, so callers never see a mix of text and JSON.
+func Execute() {
+	rootCmd := NewRootCmd()
+	rootCmd.SilenceErrors = true
+	rootCmd.SilenceUsage = true
+	if err := rootCmd.Execute(); err != nil {
+		msg := strings.TrimSpace(err.Error())
+		output, _ := rootCmd.PersistentFlags().GetString(outputFlag)
+		if outputFmt(output) == outputJSON {
+			_ = printJSON(os.Stdout, actionResult{Success: false, Message: msg})
+		} else {
+			fmt.Fprintln(os.Stderr, "Error:", msg)
+		}
+		os.Exit(1)
+	}
+}
+
 type contextKey string
 
-const clientKey contextKey = "client"
+const (
+	clientKey  contextKey = "client"
+	outputFlag string     = "output"
+)
 
 // NewRootCmd creates the root cobra command with all subcommands.
 func NewRootCmd() *cobra.Command {
@@ -19,6 +46,7 @@ func NewRootCmd() *cobra.Command {
 		urlFlag    string
 		apiKeyFlag string
 		timeout    uint
+		output     string
 	)
 
 	rootCmd := &cobra.Command{
@@ -31,6 +59,23 @@ func NewRootCmd() *cobra.Command {
 	rootCmd.PersistentFlags().StringVar(&urlFlag, "url", "", "server URL, overrides config (env: UNRAID_URL)")
 	rootCmd.PersistentFlags().StringVar(&apiKeyFlag, "api-key", "", "API key, overrides config (env: UNRAID_API_KEY)")
 	rootCmd.PersistentFlags().UintVar(&timeout, "timeout", 5, "request timeout in seconds (env: UNRAID_TIMEOUT)")
+	rootCmd.PersistentFlags().StringVarP(&output, outputFlag, "o", "text", "output format: text or json")
+
+	rootCmd.PersistentPreRunE = func(cmd *cobra.Command, _ []string) error {
+		if output != "text" && output != "json" {
+			return fmt.Errorf("invalid output format %q: must be text or json", output)
+		}
+		log.SetFlags(0)
+		if outputFmt(output) == outputJSON {
+			log.SetOutput(io.Discard)
+		} else {
+			log.SetOutput(os.Stdout)
+		}
+		ctx := withOutputFormat(cmd.Context(), outputFmt(output))
+		ctx = withOutputWriter(ctx, os.Stdout)
+		cmd.SetContext(ctx)
+		return nil
+	}
 
 	// makePreRun resolves the server config then calls fn to finish setting up
 	// the command's context. Shared by all subcommands that need a live server.

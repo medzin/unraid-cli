@@ -192,6 +192,8 @@ docker list           supported
 docker start          supported
 docker stop           supported
 docker restart        supported
+docker pause          supported
+docker unpause        supported
 docker update         supported
 vm list               supported
 vm start              supported
@@ -216,6 +218,19 @@ unraid --url https://192.168.1.100 --api-key YOUR_KEY docker list-containers
 
 # Change the request timeout (default is 5 seconds)
 unraid --timeout 10 docker list-containers
+
+# Output as JSON (useful for scripting with jq)
+unraid --output json docker list
+unraid -o json array status
+```
+
+Write commands output a result object:
+
+```json
+{
+  "success": true,
+  "message": "Container 'plex' is now running."
+}
 ```
 
 ## License
