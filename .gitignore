@@ -47,6 +47,7 @@ go.work
 
 # Build output
 bin/
+dist/
 
 # Generated GraphQL schema (fetched from Apollo via `make schema-fetch`)
 graphql/schema.graphql

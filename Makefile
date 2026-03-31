@@ -1,5 +1,6 @@
 BINARY := unraid
 BUILD_DIR := bin
+DIST_DIR := dist
 SCHEMA := graphql/schema.graphql
 SCHEMA_HASH := graphql/schema.sha256
 
@@ -48,16 +49,24 @@ schema-check:
 	fi
 
 # Cross-compilation targets
-build-all: build-linux-amd64 build-macos-amd64 build-macos-arm64 build-windows-amd64
+build-all: build-linux-amd64 build-linux-arm64 build-darwin-amd64 build-darwin-arm64 build-windows-amd64
 
 build-linux-amd64:
-	GOOS=linux GOARCH=amd64 go build -o $(BUILD_DIR)/$(BINARY)-linux-amd64 ./cmd/unraid
+	mkdir -p $(DIST_DIR)
+	GOOS=linux   GOARCH=amd64 go build -ldflags="-s -w" -o $(DIST_DIR)/$(BINARY)-linux-amd64       ./cmd/unraid
 
-build-macos-amd64:
-	GOOS=darwin GOARCH=amd64 go build -o $(BUILD_DIR)/$(BINARY)-macos-amd64 ./cmd/unraid
+build-linux-arm64:
+	mkdir -p $(DIST_DIR)
+	GOOS=linux   GOARCH=arm64 go build -ldflags="-s -w" -o $(DIST_DIR)/$(BINARY)-linux-arm64       ./cmd/unraid
 
-build-macos-arm64:
-	GOOS=darwin GOARCH=arm64 go build -o $(BUILD_DIR)/$(BINARY)-macos-arm64 ./cmd/unraid
+build-darwin-amd64:
+	mkdir -p $(DIST_DIR)
+	GOOS=darwin  GOARCH=amd64 go build -ldflags="-s -w" -o $(DIST_DIR)/$(BINARY)-darwin-amd64      ./cmd/unraid
+
+build-darwin-arm64:
+	mkdir -p $(DIST_DIR)
+	GOOS=darwin  GOARCH=arm64 go build -ldflags="-s -w" -o $(DIST_DIR)/$(BINARY)-darwin-arm64      ./cmd/unraid
 
 build-windows-amd64:
-	GOOS=windows GOARCH=amd64 go build -o $(BUILD_DIR)/$(BINARY)-windows-amd64.exe ./cmd/unraid
+	mkdir -p $(DIST_DIR)
+	GOOS=windows GOARCH=amd64 go build -ldflags="-s -w" -o $(DIST_DIR)/$(BINARY)-windows-amd64.exe ./cmd/unraid
