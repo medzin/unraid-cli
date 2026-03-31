@@ -45,11 +45,12 @@ const (
 // NewRootCmd creates the root cobra command with all subcommands.
 func NewRootCmd() *cobra.Command {
 	var (
-		serverFlag string
-		urlFlag    string
-		apiKeyFlag string
-		timeout    uint
-		output     string
+		serverFlag  string
+		urlFlag     string
+		apiKeyFlag  string
+		insecureTLS bool
+		timeout     uint
+		output      string
 	)
 
 	rootCmd := &cobra.Command{
@@ -61,6 +62,7 @@ func NewRootCmd() *cobra.Command {
 	rootCmd.PersistentFlags().StringVar(&serverFlag, "server", "", "server name from config (env: UNRAID_SERVER)")
 	rootCmd.PersistentFlags().StringVar(&urlFlag, "url", "", "server URL, overrides config (env: UNRAID_URL)")
 	rootCmd.PersistentFlags().StringVar(&apiKeyFlag, "api-key", "", "API key, overrides config (env: UNRAID_API_KEY)")
+	rootCmd.PersistentFlags().BoolVar(&insecureTLS, "insecure-tls", false, "skip TLS certificate verification (env: UNRAID_INSECURE_TLS)")
 	rootCmd.PersistentFlags().UintVar(&timeout, "timeout", 5, "request timeout in seconds (env: UNRAID_TIMEOUT)")
 	rootCmd.PersistentFlags().StringVarP(&output, outputFlag, "o", "text", "output format: text or json")
 
@@ -84,7 +86,7 @@ func NewRootCmd() *cobra.Command {
 	// the command's context. Shared by all subcommands that need a live server.
 	makePreRun := func(fn func(*cobra.Command, *config.ResolvedConfig) error) func(*cobra.Command, []string) error {
 		return func(cmd *cobra.Command, _ []string) error {
-			resolved, err := config.Resolve(serverFlag, urlFlag, apiKeyFlag)
+			resolved, err := config.Resolve(serverFlag, urlFlag, apiKeyFlag, insecureTLS)
 			if err != nil {
 				return err
 			}
@@ -93,12 +95,12 @@ func NewRootCmd() *cobra.Command {
 	}
 
 	resolveClient := makePreRun(func(cmd *cobra.Command, r *config.ResolvedConfig) error {
-		cmd.SetContext(withClient(cmd.Context(), client.New(r.URL, r.APIKey, timeout)))
+		cmd.SetContext(withClient(cmd.Context(), client.New(r.URL, r.APIKey, timeout, r.InsecureTLS)))
 		return nil
 	})
 
 	resolveIntrospect := makePreRun(func(cmd *cobra.Command, r *config.ResolvedConfig) error {
-		cmd.SetContext(withIntrospectionClient(cmd.Context(), client.NewIntrospection(r.URL, r.APIKey, timeout)))
+		cmd.SetContext(withIntrospectionClient(cmd.Context(), client.NewIntrospection(r.URL, r.APIKey, timeout, r.InsecureTLS)))
 		return nil
 	})
 

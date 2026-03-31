@@ -24,8 +24,9 @@ func newConfigCmd() *cobra.Command {
 
 func newConfigAddCmd() *cobra.Command {
 	var (
-		url    string
-		apiKey string
+		url         string
+		apiKey      string
+		insecureTLS bool
 	)
 
 	cmd := &cobra.Command{
@@ -41,7 +42,7 @@ func newConfigAddCmd() *cobra.Command {
 			}
 
 			isFirst := len(cfg.Servers) == 0
-			cfg.AddServer(name, url, apiKey)
+			cfg.AddServer(name, url, apiKey, insecureTLS)
 
 			if isFirst {
 				cfg.Default = name
@@ -61,6 +62,7 @@ func newConfigAddCmd() *cobra.Command {
 
 	cmd.Flags().StringVar(&url, "url", "", "server URL (e.g., https://192.168.1.100)")
 	cmd.Flags().StringVar(&apiKey, "api-key", "", "API key for authentication")
+	cmd.Flags().BoolVar(&insecureTLS, "insecure-tls", false, "skip TLS certificate verification (for self-signed certs)")
 	_ = cmd.MarkFlagRequired("url")
 	_ = cmd.MarkFlagRequired("api-key")
 
@@ -148,6 +150,7 @@ func newConfigListCmd() *cobra.Command {
 				fmt.Printf("  %s%s\n", name, defaultMarker)
 				fmt.Printf("    URL: %s\n", server.URL)
 				fmt.Printf("    API Key: %s\n", config.MaskAPIKey(server.APIKey))
+				fmt.Printf("    Insecure TLS: %v\n", server.InsecureTLS)
 				fmt.Println()
 			}
 			return nil

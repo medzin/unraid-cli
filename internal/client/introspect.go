@@ -15,10 +15,10 @@ type IntrospectionClient struct {
 }
 
 // NewIntrospection creates a client for schema introspection.
-func NewIntrospection(url, apiKey string, timeoutSecs uint) *IntrospectionClient {
+func NewIntrospection(url, apiKey string, timeoutSecs uint, insecureTLS bool) *IntrospectionClient {
 	return &IntrospectionClient{
 		URL:        url,
-		httpClient: newHTTPClient(apiKey, timeoutSecs),
+		httpClient: newHTTPClient(apiKey, timeoutSecs, insecureTLS),
 	}
 }
 

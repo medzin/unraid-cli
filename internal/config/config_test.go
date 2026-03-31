@@ -31,41 +31,59 @@ func TestDefaultConfigHasNoServersAndNoDefault(t *testing.T) {
 
 func TestAddServer(t *testing.T) {
 	cases := []struct {
-		name       string
-		setup      func() *Config
-		addName    string
-		addURL     string
-		addKey     string
-		wantCount  int
-		wantURL    string
-		wantAPIKey string
+		name            string
+		setup           func() *Config
+		addName         string
+		addURL          string
+		addKey          string
+		addInsecureTLS  bool
+		wantCount       int
+		wantURL         string
+		wantAPIKey      string
+		wantInsecureTLS bool
 	}{
 		{
-			name:       "new server",
-			setup:      func() *Config { return &Config{Servers: make(map[string]ServerConfig)} },
-			addName:    "test",
-			addURL:     "https://example.com",
-			addKey:     "api-key",
-			wantCount:  1,
-			wantURL:    "https://example.com",
-			wantAPIKey: "api-key",
+			name:            "new server secure",
+			setup:           func() *Config { return &Config{Servers: make(map[string]ServerConfig)} },
+			addName:         "test",
+			addURL:          "https://example.com",
+			addKey:          "api-key",
+			addInsecureTLS:  false,
+			wantCount:       1,
+			wantURL:         "https://example.com",
+			wantAPIKey:      "api-key",
+			wantInsecureTLS: false,
 		},
 		{
-			name:       "overwrites existing",
-			setup:      sampleConfig,
-			addName:    "tower",
-			addURL:     "https://new-url.com",
-			addKey:     "new-key",
-			wantCount:  2,
-			wantURL:    "https://new-url.com",
-			wantAPIKey: "new-key",
+			name:            "new server insecure TLS",
+			setup:           func() *Config { return &Config{Servers: make(map[string]ServerConfig)} },
+			addName:         "test",
+			addURL:          "https://192.168.1.100",
+			addKey:          "api-key",
+			addInsecureTLS:  true,
+			wantCount:       1,
+			wantURL:         "https://192.168.1.100",
+			wantAPIKey:      "api-key",
+			wantInsecureTLS: true,
+		},
+		{
+			name:            "overwrites existing",
+			setup:           sampleConfig,
+			addName:         "tower",
+			addURL:          "https://new-url.com",
+			addKey:          "new-key",
+			addInsecureTLS:  false,
+			wantCount:       2,
+			wantURL:         "https://new-url.com",
+			wantAPIKey:      "new-key",
+			wantInsecureTLS: false,
 		},
 	}
 
 	for _, tc := range cases {
 		t.Run(tc.name, func(t *testing.T) {
 			cfg := tc.setup()
-			cfg.AddServer(tc.addName, tc.addURL, tc.addKey)
+			cfg.AddServer(tc.addName, tc.addURL, tc.addKey, tc.addInsecureTLS)
 
 			if len(cfg.Servers) != tc.wantCount {
 				t.Errorf("expected %d servers, got %d", tc.wantCount, len(cfg.Servers))
@@ -76,6 +94,9 @@ func TestAddServer(t *testing.T) {
 			}
 			if srv.APIKey != tc.wantAPIKey {
 				t.Errorf("expected APIKey %s, got %s", tc.wantAPIKey, srv.APIKey)
+			}
+			if srv.InsecureTLS != tc.wantInsecureTLS {
+				t.Errorf("expected InsecureTLS %v, got %v", tc.wantInsecureTLS, srv.InsecureTLS)
 			}
 		})
 	}
@@ -352,16 +373,18 @@ func TestConfigPath(t *testing.T) {
 
 func TestResolve(t *testing.T) {
 	cases := []struct {
-		name       string
-		cliServer  string
-		cliURL     string
-		cliAPIKey  string
-		envURL     string
-		envAPIKey  string
-		envServer  string
-		wantURL    string
-		wantAPIKey string
-		wantErr    string
+		name            string
+		cliServer       string
+		cliURL          string
+		cliAPIKey       string
+		envURL          string
+		envAPIKey       string
+		envServer       string
+		envInsecureTLS  string
+		wantURL         string
+		wantAPIKey      string
+		wantInsecureTLS bool
+		wantErr         string
 	}{
 		{
 			name:       "both CLI args provided",
@@ -376,6 +399,24 @@ func TestResolve(t *testing.T) {
 			envAPIKey:  "env-key",
 			wantURL:    "https://env.com",
 			wantAPIKey: "env-key",
+		},
+		{
+			name:            "env vars with insecure TLS",
+			envURL:          "https://env.com",
+			envAPIKey:       "env-key",
+			envInsecureTLS:  "true",
+			wantURL:         "https://env.com",
+			wantAPIKey:      "env-key",
+			wantInsecureTLS: true,
+		},
+		{
+			name:            "env insecure TLS false by default",
+			envURL:          "https://env.com",
+			envAPIKey:       "env-key",
+			envInsecureTLS:  "",
+			wantURL:         "https://env.com",
+			wantAPIKey:      "env-key",
+			wantInsecureTLS: false,
 		},
 		{
 			name:       "CLI URL overrides env URL",
@@ -404,8 +445,9 @@ func TestResolve(t *testing.T) {
 			t.Setenv("UNRAID_URL", tc.envURL)
 			t.Setenv("UNRAID_API_KEY", tc.envAPIKey)
 			t.Setenv("UNRAID_SERVER", tc.envServer)
+			t.Setenv("UNRAID_INSECURE_TLS", tc.envInsecureTLS)
 
-			resolved, err := Resolve(tc.cliServer, tc.cliURL, tc.cliAPIKey)
+			resolved, err := Resolve(tc.cliServer, tc.cliURL, tc.cliAPIKey, false)
 
 			if tc.wantErr != "" {
 				if err == nil {
@@ -424,6 +466,9 @@ func TestResolve(t *testing.T) {
 			}
 			if resolved.APIKey != tc.wantAPIKey {
 				t.Errorf("APIKey = %q, want %q", resolved.APIKey, tc.wantAPIKey)
+			}
+			if resolved.InsecureTLS != tc.wantInsecureTLS {
+				t.Errorf("InsecureTLS = %v, want %v", resolved.InsecureTLS, tc.wantInsecureTLS)
 			}
 		})
 	}

@@ -21,13 +21,13 @@ func (t *apiKeyTransport) RoundTrip(req *http.Request) (*http.Response, error) {
 
 // newHTTPClient builds an *http.Client with the API key transport and TLS config
 // shared by both the genqlient and introspection clients.
-func newHTTPClient(apiKey string, timeoutSecs uint) *http.Client {
+func newHTTPClient(apiKey string, timeoutSecs uint, insecureTLS bool) *http.Client {
 	return &http.Client{
 		Transport: &apiKeyTransport{
 			apiKey: apiKey,
 			base: &http.Transport{
 				TLSClientConfig: &tls.Config{
-					InsecureSkipVerify: true, //nolint:gosec // Unraid uses self-signed certs
+					InsecureSkipVerify: insecureTLS,
 				},
 			},
 		},
@@ -36,6 +36,6 @@ func newHTTPClient(apiKey string, timeoutSecs uint) *http.Client {
 }
 
 // New creates a genqlient GraphQL client configured for Unraid.
-func New(url, apiKey string, timeoutSecs uint) graphql.Client {
-	return graphql.NewClient(url, newHTTPClient(apiKey, timeoutSecs))
+func New(url, apiKey string, timeoutSecs uint, insecureTLS bool) graphql.Client {
+	return graphql.NewClient(url, newHTTPClient(apiKey, timeoutSecs, insecureTLS))
 }

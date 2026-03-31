@@ -11,8 +11,9 @@ import (
 
 // ServerConfig holds connection details for a single Unraid server.
 type ServerConfig struct {
-	URL    string `toml:"url"`
-	APIKey string `toml:"api_key"`
+	URL         string `toml:"url"`
+	APIKey      string `toml:"api_key"`
+	InsecureTLS bool   `toml:"insecure_tls,omitempty"`
 }
 
 // Config holds all server configurations and the default server name.
@@ -23,8 +24,9 @@ type Config struct {
 
 // ResolvedConfig is the final server URL and API key after resolution.
 type ResolvedConfig struct {
-	URL    string
-	APIKey string
+	URL         string
+	APIKey      string
+	InsecureTLS bool
 }
 
 // ConfigPath returns the platform-specific path to the config file.
@@ -108,8 +110,8 @@ func (c *Config) GetServer(name string) *ServerConfig {
 }
 
 // AddServer adds or overwrites a server configuration.
-func (c *Config) AddServer(name, url, apiKey string) {
-	c.Servers[name] = ServerConfig{URL: url, APIKey: apiKey}
+func (c *Config) AddServer(name, url, apiKey string, insecureTLS bool) {
+	c.Servers[name] = ServerConfig{URL: url, APIKey: apiKey, InsecureTLS: insecureTLS}
 }
 
 // RemoveServer removes a server. Returns true if it existed.
@@ -137,10 +139,10 @@ func (c *Config) SetDefault(name string) error {
 
 // Resolve determines the final URL and API key from CLI flags, env vars, and config file.
 // Priority: CLI args > env vars > config file.
-func Resolve(cliServer, cliURL, cliAPIKey string) (*ResolvedConfig, error) {
+func Resolve(cliServer, cliURL, cliAPIKey string, cliInsecureTLS bool) (*ResolvedConfig, error) {
 	// If both URL and API key are provided directly, use them
 	if cliURL != "" && cliAPIKey != "" {
-		return &ResolvedConfig{URL: cliURL, APIKey: cliAPIKey}, nil
+		return &ResolvedConfig{URL: cliURL, APIKey: cliAPIKey, InsecureTLS: cliInsecureTLS}, nil
 	}
 
 	// Check environment variables
@@ -158,7 +160,8 @@ func Resolve(cliServer, cliURL, cliAPIKey string) (*ResolvedConfig, error) {
 		if cliAPIKey != "" {
 			apiKey = cliAPIKey
 		}
-		return &ResolvedConfig{URL: url, APIKey: apiKey}, nil
+		insecureTLS := cliInsecureTLS || os.Getenv("UNRAID_INSECURE_TLS") == "true"
+		return &ResolvedConfig{URL: url, APIKey: apiKey, InsecureTLS: insecureTLS}, nil
 	}
 
 	// Load config file
@@ -182,7 +185,7 @@ func Resolve(cliServer, cliURL, cliAPIKey string) (*ResolvedConfig, error) {
 		if cliAPIKey != "" {
 			apiKey = cliAPIKey
 		}
-		return &ResolvedConfig{URL: url, APIKey: apiKey}, nil
+		return &ResolvedConfig{URL: url, APIKey: apiKey, InsecureTLS: srv.InsecureTLS || cliInsecureTLS}, nil
 	}
 
 	return nil, fmt.Errorf(

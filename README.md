@@ -7,7 +7,8 @@ A command-line client for interacting with the Unraid API.
 1. Add your Unraid server:
 
 ```bash
-unraid config add tower --url https://192.168.1.100 --api-key YOUR_API_KEY
+# Unraid uses self-signed certificates by default — use --insecure-tls
+unraid config add tower --url https://192.168.1.100 --api-key YOUR_API_KEY --insecure-tls
 ```
 
 1. List running Docker containers:
@@ -24,10 +25,14 @@ several Unraid servers from a single client.
 ### Adding a Server
 
 ```bash
-unraid config add <name> --url <url> --api-key <api-key>
+unraid config add <name> --url <url> --api-key <api-key> [--insecure-tls]
 ```
 
 The first server added is automatically set as the default.
+
+Unraid uses self-signed TLS certificates by default, so most users will need
+`--insecure-tls`. If your server uses a certificate signed by a trusted CA,
+omit the flag.
 
 ### Managing Servers
 
@@ -60,6 +65,7 @@ default = "tower"
 [servers.tower]
 url = "https://192.168.1.100"
 api_key = "your-api-key-here"
+insecure_tls = true
 
 [servers.backup]
 url = "https://192.168.1.101"
@@ -77,12 +83,17 @@ The CLI resolves server settings in the following order
 
 ## Environment Variables
 
-| Variable         | Description                         |
-| ---------------- | ----------------------------------- |
-| `UNRAID_URL`     | Server URL                          |
-| `UNRAID_API_KEY` | API key for authentication          |
-| `UNRAID_SERVER`  | Server name from config file to use |
-| `UNRAID_TIMEOUT` | Request timeout in seconds          |
+| Variable               | Description                                        |
+| ---------------------- | -------------------------------------------------- |
+| `UNRAID_URL`           | Server URL                                         |
+| `UNRAID_API_KEY`       | API key for authentication                         |
+| `UNRAID_SERVER`        | Server name from config file to use                |
+| `UNRAID_TIMEOUT`       | Request timeout in seconds                         |
+| `UNRAID_INSECURE_TLS`  | Set to `true` to skip TLS certificate verification |
+
+`UNRAID_INSECURE_TLS` applies when `UNRAID_URL` and `UNRAID_API_KEY` are used.
+For config-file based setups, set `insecure_tls = true` per server or use the
+`--insecure-tls` flag to override for a single invocation.
 
 ## Commands
 
@@ -234,6 +245,9 @@ unraid --server backup docker list-containers
 
 # Override URL and API key directly
 unraid --url https://192.168.1.100 --api-key YOUR_KEY docker list-containers
+
+# Skip TLS certificate verification (for self-signed certs)
+unraid --insecure-tls docker list
 
 # Change the request timeout (default is 5 seconds)
 unraid --timeout 10 docker list-containers
