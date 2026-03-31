@@ -271,6 +271,51 @@ type GetArrayResponse struct {
 // GetArray returns GetArrayResponse.Array, and is useful for accessing the field via an interface.
 func (v *GetArrayResponse) GetArray() GetArrayArrayUnraidArray { return v.Array }
 
+// GetContainerLogsDocker includes the requested fields of the GraphQL type Docker.
+type GetContainerLogsDocker struct {
+	// Access container logs. Requires specifying a target container id through resolver arguments.
+	Logs GetContainerLogsDockerLogsDockerContainerLogs `json:"logs"`
+}
+
+// GetLogs returns GetContainerLogsDocker.Logs, and is useful for accessing the field via an interface.
+func (v *GetContainerLogsDocker) GetLogs() GetContainerLogsDockerLogsDockerContainerLogs {
+	return v.Logs
+}
+
+// GetContainerLogsDockerLogsDockerContainerLogs includes the requested fields of the GraphQL type DockerContainerLogs.
+type GetContainerLogsDockerLogsDockerContainerLogs struct {
+	Lines []GetContainerLogsDockerLogsDockerContainerLogsLinesDockerContainerLogLine `json:"lines"`
+}
+
+// GetLines returns GetContainerLogsDockerLogsDockerContainerLogs.Lines, and is useful for accessing the field via an interface.
+func (v *GetContainerLogsDockerLogsDockerContainerLogs) GetLines() []GetContainerLogsDockerLogsDockerContainerLogsLinesDockerContainerLogLine {
+	return v.Lines
+}
+
+// GetContainerLogsDockerLogsDockerContainerLogsLinesDockerContainerLogLine includes the requested fields of the GraphQL type DockerContainerLogLine.
+type GetContainerLogsDockerLogsDockerContainerLogsLinesDockerContainerLogLine struct {
+	Timestamp string `json:"timestamp"`
+	Message   string `json:"message"`
+}
+
+// GetTimestamp returns GetContainerLogsDockerLogsDockerContainerLogsLinesDockerContainerLogLine.Timestamp, and is useful for accessing the field via an interface.
+func (v *GetContainerLogsDockerLogsDockerContainerLogsLinesDockerContainerLogLine) GetTimestamp() string {
+	return v.Timestamp
+}
+
+// GetMessage returns GetContainerLogsDockerLogsDockerContainerLogsLinesDockerContainerLogLine.Message, and is useful for accessing the field via an interface.
+func (v *GetContainerLogsDockerLogsDockerContainerLogsLinesDockerContainerLogLine) GetMessage() string {
+	return v.Message
+}
+
+// GetContainerLogsResponse is returned by GetContainerLogs on success.
+type GetContainerLogsResponse struct {
+	Docker GetContainerLogsDocker `json:"docker"`
+}
+
+// GetDocker returns GetContainerLogsResponse.Docker, and is useful for accessing the field via an interface.
+func (v *GetContainerLogsResponse) GetDocker() GetContainerLogsDocker { return v.Docker }
+
 // GetDockerContainersDocker includes the requested fields of the GraphQL type Docker.
 type GetDockerContainersDocker struct {
 	Containers []GetDockerContainersDockerContainersDockerContainer `json:"containers"`
@@ -833,6 +878,18 @@ type __ForceStopVmInput struct {
 // GetId returns __ForceStopVmInput.Id, and is useful for accessing the field via an interface.
 func (v *__ForceStopVmInput) GetId() string { return v.Id }
 
+// __GetContainerLogsInput is used internally by genqlient
+type __GetContainerLogsInput struct {
+	Id   string `json:"id"`
+	Tail *int   `json:"tail"`
+}
+
+// GetId returns __GetContainerLogsInput.Id, and is useful for accessing the field via an interface.
+func (v *__GetContainerLogsInput) GetId() string { return v.Id }
+
+// GetTail returns __GetContainerLogsInput.Tail, and is useful for accessing the field via an interface.
+func (v *__GetContainerLogsInput) GetTail() *int { return v.Tail }
+
 // __PauseDockerContainerInput is used internally by genqlient
 type __PauseDockerContainerInput struct {
 	Id string `json:"id"`
@@ -1011,6 +1068,47 @@ func GetArray(
 	}
 
 	data_ = &GetArrayResponse{}
+	resp_ := &graphql.Response{Data: data_}
+
+	err_ = client_.MakeRequest(
+		ctx_,
+		req_,
+		resp_,
+	)
+
+	return data_, err_
+}
+
+// The query executed by GetContainerLogs.
+const GetContainerLogs_Operation = `
+query GetContainerLogs ($id: PrefixedID!, $tail: Int) {
+	docker {
+		logs(id: $id, tail: $tail) {
+			lines {
+				timestamp
+				message
+			}
+		}
+	}
+}
+`
+
+func GetContainerLogs(
+	ctx_ context.Context,
+	client_ graphql.Client,
+	id string,
+	tail *int,
+) (data_ *GetContainerLogsResponse, err_ error) {
+	req_ := &graphql.Request{
+		OpName: "GetContainerLogs",
+		Query:  GetContainerLogs_Operation,
+		Variables: &__GetContainerLogsInput{
+			Id:   id,
+			Tail: tail,
+		},
+	}
+
+	data_ = &GetContainerLogsResponse{}
 	resp_ := &graphql.Response{Data: data_}
 
 	err_ = client_.MakeRequest(

@@ -120,6 +120,48 @@ func TestIntegrationArrayStatusJSON(t *testing.T) {
 	}
 }
 
+func TestIntegrationDockerLogsJSON(t *testing.T) {
+	// The mock must satisfy both GetDockerContainers (resolveContainerID)
+	// and GetContainerLogs in a single response shape.
+	srv := mockGQLServer(t, map[string]any{
+		"data": map[string]any{
+			"docker": map[string]any{
+				"containers": []map[string]any{
+					{"id": "ctr-1", "names": []string{"/plex"}, "image": "linuxserver/plex", "state": "RUNNING", "status": "Up"},
+				},
+				"logs": map[string]any{
+					"lines": []map[string]any{
+						{"timestamp": "2024-01-01T00:00:00Z", "message": "Server started"},
+						{"timestamp": "2024-01-01T00:00:01Z", "message": "Listening on port 32400"},
+					},
+				},
+			},
+		},
+	})
+	defer srv.Close()
+
+	var buf bytes.Buffer
+	cmd := newDockerLogsCmd()
+	cmd.PreRunE = jsonPreRun(graphql.NewClient(srv.URL, srv.Client()), &buf)
+	cmd.SetArgs([]string{"plex"})
+	if err := cmd.Execute(); err != nil {
+		t.Fatalf("unexpected error: %v", err)
+	}
+
+	var got []map[string]any
+	if err := json.Unmarshal(buf.Bytes(), &got); err != nil {
+		t.Fatalf("output is not valid JSON: %v\n%s", err, buf.String())
+	}
+	if len(got) != 2 {
+		t.Fatalf("expected 2 log lines, got %d", len(got))
+	}
+	for _, field := range []string{"timestamp", "message"} {
+		if _, ok := got[0][field]; !ok {
+			t.Errorf("missing field %q in log line JSON", field)
+		}
+	}
+}
+
 func TestIntegrationServerVersionJSON(t *testing.T) {
 	srv := mockGQLServer(t, map[string]any{
 		"data": map[string]any{

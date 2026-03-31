@@ -1,0 +1,10 @@
+query GetContainerLogs($id: PrefixedID!, $tail: Int) {
+  docker {
+    logs(id: $id, tail: $tail) {
+      lines {
+        timestamp
+        message
+      }
+    }
+  }
+}

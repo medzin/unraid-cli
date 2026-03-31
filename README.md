@@ -130,6 +130,11 @@ unraid docker unpause <name>
 
 # Update a container to the latest image
 unraid docker update <name>
+
+# Fetch container logs (last 100 lines by default)
+unraid docker logs <name>
+unraid docker logs <name> --tail 50
+unraid docker logs <name> -n 50
 ```
 
 ### Virtual Machines

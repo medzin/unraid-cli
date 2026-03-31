@@ -22,6 +22,7 @@ func newDockerCmd(preRun func(*cobra.Command, []string) error) *cobra.Command {
 
 	cmd.AddCommand(
 		newDockerListCmd(),
+		newDockerLogsCmd(),
 		newDockerStartCmd(),
 		newDockerStopCmd(),
 		newDockerRestartCmd(),
@@ -117,6 +118,43 @@ func newDockerUpdateCmd() *cobra.Command {
 			return updateContainer(cmd.Context(), getClient(cmd.Context()), args[0])
 		},
 	}
+}
+
+func newDockerLogsCmd() *cobra.Command {
+	var tail int
+
+	cmd := &cobra.Command{
+		Use:   "logs <name>",
+		Short: "Fetch container logs",
+		Args:  cobra.ExactArgs(1),
+		RunE: func(cmd *cobra.Command, args []string) error {
+			return containerLogs(cmd.Context(), getClient(cmd.Context()), args[0], tail)
+		},
+	}
+
+	cmd.Flags().IntVarP(&tail, "tail", "n", 100, "number of lines to show from the end")
+	return cmd
+}
+
+func containerLogs(ctx context.Context, c graphql.Client, name string, tail int) error {
+	id, err := resolveContainerID(ctx, c, name)
+	if err != nil {
+		return err
+	}
+	resp, err := client.GetContainerLogs(ctx, c, id, &tail)
+	if err != nil {
+		return err
+	}
+	lines := resp.Docker.Logs.Lines
+	return render(ctx, lines, func() error {
+		w := getOutputWriter(ctx)
+		for _, line := range lines {
+			if _, err := fmt.Fprintf(w, "%s  %s\n", line.Timestamp, line.Message); err != nil {
+				return err
+			}
+		}
+		return nil
+	})
 }
 
 type containerMutationFunc func(ctx context.Context, c graphql.Client, id string) (string, error)
