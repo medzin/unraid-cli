@@ -1,0 +1,10 @@
+query GetServerVersion {
+  info {
+    versions {
+      core {
+        unraid
+        api
+      }
+    }
+  }
+}

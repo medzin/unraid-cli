@@ -120,6 +120,39 @@ func TestIntegrationArrayStatusJSON(t *testing.T) {
 	}
 }
 
+func TestIntegrationServerVersionJSON(t *testing.T) {
+	srv := mockGQLServer(t, map[string]any{
+		"data": map[string]any{
+			"info": map[string]any{
+				"versions": map[string]any{
+					"core": map[string]any{
+						"unraid": "6.12.10",
+						"api":    "4.5.0",
+					},
+				},
+			},
+		},
+	})
+	defer srv.Close()
+
+	var buf bytes.Buffer
+	cmd := newServerVersionCmd(jsonPreRun(graphql.NewClient(srv.URL, srv.Client()), &buf))
+	if err := cmd.Execute(); err != nil {
+		t.Fatalf("unexpected error: %v", err)
+	}
+
+	var got map[string]any
+	if err := json.Unmarshal(buf.Bytes(), &got); err != nil {
+		t.Fatalf("output is not valid JSON: %v\n%s", err, buf.String())
+	}
+	if got["unraid_os"] != "6.12.10" {
+		t.Errorf("unraid_os = %v, want 6.12.10", got["unraid_os"])
+	}
+	if got["api"] != "4.5.0" {
+		t.Errorf("api = %v, want 4.5.0", got["api"])
+	}
+}
+
 func TestIntegrationArrayStartJSON(t *testing.T) {
 	srv := mockGQLServer(t, map[string]any{
 		"data": map[string]any{

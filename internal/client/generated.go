@@ -349,6 +349,48 @@ type GetDockerContainersResponse struct {
 // GetDocker returns GetDockerContainersResponse.Docker, and is useful for accessing the field via an interface.
 func (v *GetDockerContainersResponse) GetDocker() GetDockerContainersDocker { return v.Docker }
 
+// GetServerVersionInfo includes the requested fields of the GraphQL type Info.
+type GetServerVersionInfo struct {
+	// Software versions
+	Versions GetServerVersionInfoVersions `json:"versions"`
+}
+
+// GetVersions returns GetServerVersionInfo.Versions, and is useful for accessing the field via an interface.
+func (v *GetServerVersionInfo) GetVersions() GetServerVersionInfoVersions { return v.Versions }
+
+// GetServerVersionInfoVersions includes the requested fields of the GraphQL type InfoVersions.
+type GetServerVersionInfoVersions struct {
+	// Core system versions
+	Core GetServerVersionInfoVersionsCoreCoreVersions `json:"core"`
+}
+
+// GetCore returns GetServerVersionInfoVersions.Core, and is useful for accessing the field via an interface.
+func (v *GetServerVersionInfoVersions) GetCore() GetServerVersionInfoVersionsCoreCoreVersions {
+	return v.Core
+}
+
+// GetServerVersionInfoVersionsCoreCoreVersions includes the requested fields of the GraphQL type CoreVersions.
+type GetServerVersionInfoVersionsCoreCoreVersions struct {
+	// Unraid version
+	Unraid *string `json:"unraid"`
+	// Unraid API version
+	Api *string `json:"api"`
+}
+
+// GetUnraid returns GetServerVersionInfoVersionsCoreCoreVersions.Unraid, and is useful for accessing the field via an interface.
+func (v *GetServerVersionInfoVersionsCoreCoreVersions) GetUnraid() *string { return v.Unraid }
+
+// GetApi returns GetServerVersionInfoVersionsCoreCoreVersions.Api, and is useful for accessing the field via an interface.
+func (v *GetServerVersionInfoVersionsCoreCoreVersions) GetApi() *string { return v.Api }
+
+// GetServerVersionResponse is returned by GetServerVersion on success.
+type GetServerVersionResponse struct {
+	Info GetServerVersionInfo `json:"info"`
+}
+
+// GetInfo returns GetServerVersionResponse.Info, and is useful for accessing the field via an interface.
+func (v *GetServerVersionResponse) GetInfo() GetServerVersionInfo { return v.Info }
+
 // GetVmsResponse is returned by GetVms on success.
 type GetVmsResponse struct {
 	// Get information about all VMs on the system
@@ -1011,6 +1053,41 @@ func GetDockerContainers(
 	}
 
 	data_ = &GetDockerContainersResponse{}
+	resp_ := &graphql.Response{Data: data_}
+
+	err_ = client_.MakeRequest(
+		ctx_,
+		req_,
+		resp_,
+	)
+
+	return data_, err_
+}
+
+// The query executed by GetServerVersion.
+const GetServerVersion_Operation = `
+query GetServerVersion {
+	info {
+		versions {
+			core {
+				unraid
+				api
+			}
+		}
+	}
+}
+`
+
+func GetServerVersion(
+	ctx_ context.Context,
+	client_ graphql.Client,
+) (data_ *GetServerVersionResponse, err_ error) {
+	req_ := &graphql.Request{
+		OpName: "GetServerVersion",
+		Query:  GetServerVersion_Operation,
+	}
+
+	data_ = &GetServerVersionResponse{}
 	resp_ := &graphql.Response{Data: data_}
 
 	err_ = client_.MakeRequest(

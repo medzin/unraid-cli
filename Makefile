@@ -1,6 +1,8 @@
 BINARY := unraid
 BUILD_DIR := bin
 DIST_DIR := dist
+VERSION ?= $(shell git describe --tags --always --dirty 2>/dev/null || echo "dev")
+LDFLAGS := -s -w -X github.com/medzin/unraid-cli/internal/commands.version=$(VERSION)
 SCHEMA := graphql/schema.graphql
 SCHEMA_HASH := graphql/schema.sha256
 
@@ -53,20 +55,20 @@ build-all: build-linux-amd64 build-linux-arm64 build-darwin-amd64 build-darwin-a
 
 build-linux-amd64:
 	mkdir -p $(DIST_DIR)
-	GOOS=linux   GOARCH=amd64 go build -ldflags="-s -w" -o $(DIST_DIR)/$(BINARY)-linux-amd64       ./cmd/unraid
+	GOOS=linux   GOARCH=amd64 go build -ldflags="$(LDFLAGS)" -o $(DIST_DIR)/$(BINARY)-linux-amd64       ./cmd/unraid
 
 build-linux-arm64:
 	mkdir -p $(DIST_DIR)
-	GOOS=linux   GOARCH=arm64 go build -ldflags="-s -w" -o $(DIST_DIR)/$(BINARY)-linux-arm64       ./cmd/unraid
+	GOOS=linux   GOARCH=arm64 go build -ldflags="$(LDFLAGS)" -o $(DIST_DIR)/$(BINARY)-linux-arm64       ./cmd/unraid
 
 build-darwin-amd64:
 	mkdir -p $(DIST_DIR)
-	GOOS=darwin  GOARCH=amd64 go build -ldflags="-s -w" -o $(DIST_DIR)/$(BINARY)-darwin-amd64      ./cmd/unraid
+	GOOS=darwin  GOARCH=amd64 go build -ldflags="$(LDFLAGS)" -o $(DIST_DIR)/$(BINARY)-darwin-amd64      ./cmd/unraid
 
 build-darwin-arm64:
 	mkdir -p $(DIST_DIR)
-	GOOS=darwin  GOARCH=arm64 go build -ldflags="-s -w" -o $(DIST_DIR)/$(BINARY)-darwin-arm64      ./cmd/unraid
+	GOOS=darwin  GOARCH=arm64 go build -ldflags="$(LDFLAGS)" -o $(DIST_DIR)/$(BINARY)-darwin-arm64      ./cmd/unraid
 
 build-windows-amd64:
 	mkdir -p $(DIST_DIR)
-	GOOS=windows GOARCH=amd64 go build -ldflags="-s -w" -o $(DIST_DIR)/$(BINARY)-windows-amd64.exe ./cmd/unraid
+	GOOS=windows GOARCH=amd64 go build -ldflags="$(LDFLAGS)" -o $(DIST_DIR)/$(BINARY)-windows-amd64.exe ./cmd/unraid

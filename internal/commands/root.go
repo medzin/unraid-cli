@@ -32,6 +32,9 @@ func Execute() {
 	}
 }
 
+// version is set at build time via -ldflags="-X github.com/medzin/unraid-cli/internal/commands.version=..."
+var version = "dev"
+
 type contextKey string
 
 const (
@@ -52,7 +55,7 @@ func NewRootCmd() *cobra.Command {
 	rootCmd := &cobra.Command{
 		Use:     "unraid",
 		Short:   "CLI client for Unraid API",
-		Version: "0.1.0",
+		Version: version,
 	}
 
 	rootCmd.PersistentFlags().StringVar(&serverFlag, "server", "", "server name from config (env: UNRAID_SERVER)")
@@ -104,6 +107,7 @@ func NewRootCmd() *cobra.Command {
 	rootCmd.AddCommand(newDockerCmd(resolveClient))
 	rootCmd.AddCommand(newVmCmd(resolveClient))
 	rootCmd.AddCommand(newCapabilitiesCmd(resolveIntrospect))
+	rootCmd.AddCommand(newServerVersionCmd(resolveClient))
 
 	return rootCmd
 }

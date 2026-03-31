@@ -10,7 +10,7 @@ A command-line client for interacting with the Unraid API.
 unraid config add tower --url https://192.168.1.100 --api-key YOUR_API_KEY
 ```
 
-2. List running Docker containers:
+1. List running Docker containers:
 
 ```bash
 unraid docker list
@@ -166,6 +166,14 @@ unraid vm reboot <name>
 unraid vm reset <name>
 ```
 
+### Server Version
+
+Show the Unraid OS and API versions of the connected server.
+
+```bash
+unraid server-version
+```
+
 ### Capabilities
 
 Check which CLI commands are supported by the connected server. Useful when
@@ -203,6 +211,12 @@ vm pause              supported
 vm resume             supported
 vm reboot             supported
 vm reset              supported
+```
+
+### CLI Version
+
+```bash
+unraid --version
 ```
 
 ### Global Options
