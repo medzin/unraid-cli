@@ -394,6 +394,55 @@ type GetDockerContainersResponse struct {
 // GetDocker returns GetDockerContainersResponse.Docker, and is useful for accessing the field via an interface.
 func (v *GetDockerContainersResponse) GetDocker() GetDockerContainersDocker { return v.Docker }
 
+// GetLogFileLogFileLogFileContent includes the requested fields of the GraphQL type LogFileContent.
+type GetLogFileLogFileLogFileContent struct {
+	// Path to the log file
+	Path string `json:"path"`
+	// Content of the log file
+	Content string `json:"content"`
+	// Total number of lines in the file
+	TotalLines int `json:"totalLines"`
+}
+
+// GetPath returns GetLogFileLogFileLogFileContent.Path, and is useful for accessing the field via an interface.
+func (v *GetLogFileLogFileLogFileContent) GetPath() string { return v.Path }
+
+// GetContent returns GetLogFileLogFileLogFileContent.Content, and is useful for accessing the field via an interface.
+func (v *GetLogFileLogFileLogFileContent) GetContent() string { return v.Content }
+
+// GetTotalLines returns GetLogFileLogFileLogFileContent.TotalLines, and is useful for accessing the field via an interface.
+func (v *GetLogFileLogFileLogFileContent) GetTotalLines() int { return v.TotalLines }
+
+// GetLogFileResponse is returned by GetLogFile on success.
+type GetLogFileResponse struct {
+	LogFile GetLogFileLogFileLogFileContent `json:"logFile"`
+}
+
+// GetLogFile returns GetLogFileResponse.LogFile, and is useful for accessing the field via an interface.
+func (v *GetLogFileResponse) GetLogFile() GetLogFileLogFileLogFileContent { return v.LogFile }
+
+// GetLogFilesLogFilesLogFile includes the requested fields of the GraphQL type LogFile.
+type GetLogFilesLogFilesLogFile struct {
+	// Name of the log file
+	Name string `json:"name"`
+	// Full path to the log file
+	Path string `json:"path"`
+}
+
+// GetName returns GetLogFilesLogFilesLogFile.Name, and is useful for accessing the field via an interface.
+func (v *GetLogFilesLogFilesLogFile) GetName() string { return v.Name }
+
+// GetPath returns GetLogFilesLogFilesLogFile.Path, and is useful for accessing the field via an interface.
+func (v *GetLogFilesLogFilesLogFile) GetPath() string { return v.Path }
+
+// GetLogFilesResponse is returned by GetLogFiles on success.
+type GetLogFilesResponse struct {
+	LogFiles []GetLogFilesLogFilesLogFile `json:"logFiles"`
+}
+
+// GetLogFiles returns GetLogFilesResponse.LogFiles, and is useful for accessing the field via an interface.
+func (v *GetLogFilesResponse) GetLogFiles() []GetLogFilesLogFilesLogFile { return v.LogFiles }
+
 // GetServerVersionInfo includes the requested fields of the GraphQL type Info.
 type GetServerVersionInfo struct {
 	// Software versions
@@ -890,6 +939,18 @@ func (v *__GetContainerLogsInput) GetId() string { return v.Id }
 // GetTail returns __GetContainerLogsInput.Tail, and is useful for accessing the field via an interface.
 func (v *__GetContainerLogsInput) GetTail() *int { return v.Tail }
 
+// __GetLogFileInput is used internally by genqlient
+type __GetLogFileInput struct {
+	Path  string `json:"path"`
+	Lines *int   `json:"lines"`
+}
+
+// GetPath returns __GetLogFileInput.Path, and is useful for accessing the field via an interface.
+func (v *__GetLogFileInput) GetPath() string { return v.Path }
+
+// GetLines returns __GetLogFileInput.Lines, and is useful for accessing the field via an interface.
+func (v *__GetLogFileInput) GetLines() *int { return v.Lines }
+
 // __PauseDockerContainerInput is used internally by genqlient
 type __PauseDockerContainerInput struct {
 	Id string `json:"id"`
@@ -1151,6 +1212,75 @@ func GetDockerContainers(
 	}
 
 	data_ = &GetDockerContainersResponse{}
+	resp_ := &graphql.Response{Data: data_}
+
+	err_ = client_.MakeRequest(
+		ctx_,
+		req_,
+		resp_,
+	)
+
+	return data_, err_
+}
+
+// The query executed by GetLogFile.
+const GetLogFile_Operation = `
+query GetLogFile ($path: String!, $lines: Int) {
+	logFile(path: $path, lines: $lines) {
+		path
+		content
+		totalLines
+	}
+}
+`
+
+func GetLogFile(
+	ctx_ context.Context,
+	client_ graphql.Client,
+	path string,
+	lines *int,
+) (data_ *GetLogFileResponse, err_ error) {
+	req_ := &graphql.Request{
+		OpName: "GetLogFile",
+		Query:  GetLogFile_Operation,
+		Variables: &__GetLogFileInput{
+			Path:  path,
+			Lines: lines,
+		},
+	}
+
+	data_ = &GetLogFileResponse{}
+	resp_ := &graphql.Response{Data: data_}
+
+	err_ = client_.MakeRequest(
+		ctx_,
+		req_,
+		resp_,
+	)
+
+	return data_, err_
+}
+
+// The query executed by GetLogFiles.
+const GetLogFiles_Operation = `
+query GetLogFiles {
+	logFiles {
+		name
+		path
+	}
+}
+`
+
+func GetLogFiles(
+	ctx_ context.Context,
+	client_ graphql.Client,
+) (data_ *GetLogFilesResponse, err_ error) {
+	req_ := &graphql.Request{
+		OpName: "GetLogFiles",
+		Query:  GetLogFiles_Operation,
+	}
+
+	data_ = &GetLogFilesResponse{}
 	resp_ := &graphql.Response{Data: data_}
 
 	err_ = client_.MakeRequest(

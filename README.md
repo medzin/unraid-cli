@@ -182,12 +182,26 @@ unraid vm reboot <name>
 unraid vm reset <name>
 ```
 
-### Server Version
+### Server
 
-Show the Unraid OS and API versions of the connected server.
+Query information about the Unraid server.
 
 ```bash
-unraid server-version
+# Show Unraid OS and API versions
+unraid server version
+
+# List available log files
+unraid server log --list
+
+# Show last 100 lines of a log file (default)
+unraid server log /var/log/syslog
+
+# Show a specific number of lines
+unraid server log /var/log/syslog --lines 50
+unraid server log /var/log/syslog -n 50
+
+# Show the full log file
+unraid server log /var/log/syslog --lines 0
 ```
 
 ### Capabilities
@@ -209,6 +223,8 @@ Capabilities for https://192.168.1.100
 
 COMMAND               STATUS
 ----------------------------------------
+server version        supported
+server log            supported
 array status          supported
 array start           supported
 array stop            supported

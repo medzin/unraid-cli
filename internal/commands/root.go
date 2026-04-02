@@ -109,7 +109,7 @@ func NewRootCmd() *cobra.Command {
 	rootCmd.AddCommand(newDockerCmd(resolveClient))
 	rootCmd.AddCommand(newVmCmd(resolveClient))
 	rootCmd.AddCommand(newCapabilitiesCmd(resolveIntrospect))
-	rootCmd.AddCommand(newServerVersionCmd(resolveClient))
+	rootCmd.AddCommand(newServerCmd(resolveClient))
 
 	return rootCmd
 }

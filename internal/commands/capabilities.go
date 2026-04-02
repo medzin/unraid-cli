@@ -30,6 +30,14 @@ type capabilityCondition struct {
 
 var commandCapabilities = []capabilityCheck{
 	{
+		command:    "server version",
+		conditions: []capabilityCondition{{scopeQuery, "info"}},
+	},
+	{
+		command:    "server log",
+		conditions: []capabilityCondition{{scopeQuery, "logFile"}},
+	},
+	{
 		command:    "array status",
 		conditions: []capabilityCondition{{scopeQuery, "array"}},
 	},

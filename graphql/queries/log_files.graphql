@@ -1,0 +1,6 @@
+query GetLogFiles {
+  logFiles {
+    name
+    path
+  }
+}
