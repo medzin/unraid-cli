@@ -42,7 +42,7 @@ func newDockerListCmd() *cobra.Command {
 
 	cmd := &cobra.Command{
 		Use:     "list",
-		Aliases: []string{"ls", "list-containers"},
+		Aliases: []string{"ls"},
 		Short:   "List Docker containers",
 		Args:    cobra.NoArgs,
 		RunE: func(cmd *cobra.Command, _ []string) error {
@@ -132,7 +132,7 @@ func newDockerLogsCmd() *cobra.Command {
 		},
 	}
 
-	cmd.Flags().IntVarP(&tail, "tail", "n", 100, "number of lines to show from the end")
+	cmd.Flags().IntVarP(&tail, "lines", "n", 100, "number of lines to show from the end")
 	return cmd
 }
 

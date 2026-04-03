@@ -182,7 +182,7 @@ func TestIntegrationDockerLogsJSON(t *testing.T) {
 		wantTailVar float64
 	}{
 		{name: "default tail=100", args: []string{"plex"}, wantTailVar: 100},
-		{name: "explicit tail value", args: []string{"plex", "--tail", "50"}, wantTailVar: 50},
+		{name: "explicit tail value", args: []string{"plex", "--lines", "50"}, wantTailVar: 50},
 	}
 
 	for _, tc := range cases {

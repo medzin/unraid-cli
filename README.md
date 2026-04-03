@@ -144,7 +144,7 @@ unraid docker update <name>
 
 # Fetch container logs (last 100 lines by default)
 unraid docker logs <name>
-unraid docker logs <name> --tail 50
+unraid docker logs <name> --lines 50
 unraid docker logs <name> -n 50
 ```
 
@@ -257,16 +257,16 @@ These options can be used with any command:
 
 ```bash
 # Use a specific server from config
-unraid --server backup docker list-containers
+unraid --server backup docker list
 
 # Override URL and API key directly
-unraid --url https://192.168.1.100 --api-key YOUR_KEY docker list-containers
+unraid --url https://192.168.1.100 --api-key YOUR_KEY docker list
 
 # Skip TLS certificate verification (for self-signed certs)
 unraid --insecure-tls docker list
 
 # Change the request timeout (default is 5 seconds)
-unraid --timeout 10 docker list-containers
+unraid --timeout 10 docker list
 
 # Output as JSON (useful for scripting with jq)
 unraid --output json docker list
