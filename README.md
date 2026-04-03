@@ -202,6 +202,15 @@ unraid server log /var/log/syslog -n 50
 
 # Show the full log file
 unraid server log /var/log/syslog --lines 0
+
+# List unread notifications (default, last 50)
+unraid server notifications
+
+# List archived notifications
+unraid server notifications --archive
+
+# Show more notifications
+unraid server notifications --limit 100
 ```
 
 ### Capabilities

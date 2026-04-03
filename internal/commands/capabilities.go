@@ -38,6 +38,10 @@ var commandCapabilities = []capabilityCheck{
 		conditions: []capabilityCondition{{scopeQuery, "logFile"}},
 	},
 	{
+		command:    "server notifications",
+		conditions: []capabilityCondition{{scopeQuery, "notifications"}},
+	},
+	{
 		command:    "array status",
 		conditions: []capabilityCondition{{scopeQuery, "array"}},
 	},

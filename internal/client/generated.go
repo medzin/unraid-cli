@@ -443,6 +443,64 @@ type GetLogFilesResponse struct {
 // GetLogFiles returns GetLogFilesResponse.LogFiles, and is useful for accessing the field via an interface.
 func (v *GetLogFilesResponse) GetLogFiles() []GetLogFilesLogFilesLogFile { return v.LogFiles }
 
+// GetNotificationsNotifications includes the requested fields of the GraphQL type Notifications.
+type GetNotificationsNotifications struct {
+	List []GetNotificationsNotificationsListNotification `json:"list"`
+}
+
+// GetList returns GetNotificationsNotifications.List, and is useful for accessing the field via an interface.
+func (v *GetNotificationsNotifications) GetList() []GetNotificationsNotificationsListNotification {
+	return v.List
+}
+
+// GetNotificationsNotificationsListNotification includes the requested fields of the GraphQL type Notification.
+type GetNotificationsNotificationsListNotification struct {
+	Id string `json:"id"`
+	// Also known as 'event'
+	Title              string                 `json:"title"`
+	Subject            string                 `json:"subject"`
+	Description        string                 `json:"description"`
+	Importance         NotificationImportance `json:"importance"`
+	Type               NotificationType       `json:"type"`
+	FormattedTimestamp *string                `json:"formattedTimestamp"`
+}
+
+// GetId returns GetNotificationsNotificationsListNotification.Id, and is useful for accessing the field via an interface.
+func (v *GetNotificationsNotificationsListNotification) GetId() string { return v.Id }
+
+// GetTitle returns GetNotificationsNotificationsListNotification.Title, and is useful for accessing the field via an interface.
+func (v *GetNotificationsNotificationsListNotification) GetTitle() string { return v.Title }
+
+// GetSubject returns GetNotificationsNotificationsListNotification.Subject, and is useful for accessing the field via an interface.
+func (v *GetNotificationsNotificationsListNotification) GetSubject() string { return v.Subject }
+
+// GetDescription returns GetNotificationsNotificationsListNotification.Description, and is useful for accessing the field via an interface.
+func (v *GetNotificationsNotificationsListNotification) GetDescription() string { return v.Description }
+
+// GetImportance returns GetNotificationsNotificationsListNotification.Importance, and is useful for accessing the field via an interface.
+func (v *GetNotificationsNotificationsListNotification) GetImportance() NotificationImportance {
+	return v.Importance
+}
+
+// GetType returns GetNotificationsNotificationsListNotification.Type, and is useful for accessing the field via an interface.
+func (v *GetNotificationsNotificationsListNotification) GetType() NotificationType { return v.Type }
+
+// GetFormattedTimestamp returns GetNotificationsNotificationsListNotification.FormattedTimestamp, and is useful for accessing the field via an interface.
+func (v *GetNotificationsNotificationsListNotification) GetFormattedTimestamp() *string {
+	return v.FormattedTimestamp
+}
+
+// GetNotificationsResponse is returned by GetNotifications on success.
+type GetNotificationsResponse struct {
+	// Get all notifications
+	Notifications GetNotificationsNotifications `json:"notifications"`
+}
+
+// GetNotifications returns GetNotificationsResponse.Notifications, and is useful for accessing the field via an interface.
+func (v *GetNotificationsResponse) GetNotifications() GetNotificationsNotifications {
+	return v.Notifications
+}
+
 // GetServerVersionInfo includes the requested fields of the GraphQL type Info.
 type GetServerVersionInfo struct {
 	// Software versions
@@ -520,6 +578,32 @@ func (v *GetVmsVmsDomainsVmDomain) GetName() *string { return v.Name }
 
 // GetState returns GetVmsVmsDomainsVmDomain.State, and is useful for accessing the field via an interface.
 func (v *GetVmsVmsDomainsVmDomain) GetState() VmState { return v.State }
+
+type NotificationImportance string
+
+const (
+	NotificationImportanceAlert   NotificationImportance = "ALERT"
+	NotificationImportanceInfo    NotificationImportance = "INFO"
+	NotificationImportanceWarning NotificationImportance = "WARNING"
+)
+
+var AllNotificationImportance = []NotificationImportance{
+	NotificationImportanceAlert,
+	NotificationImportanceInfo,
+	NotificationImportanceWarning,
+}
+
+type NotificationType string
+
+const (
+	NotificationTypeUnread  NotificationType = "UNREAD"
+	NotificationTypeArchive NotificationType = "ARCHIVE"
+)
+
+var AllNotificationType = []NotificationType{
+	NotificationTypeUnread,
+	NotificationTypeArchive,
+}
 
 // PauseDockerContainerDockerDockerMutations includes the requested fields of the GraphQL type DockerMutations.
 type PauseDockerContainerDockerDockerMutations struct {
@@ -951,6 +1035,26 @@ func (v *__GetLogFileInput) GetPath() string { return v.Path }
 // GetLines returns __GetLogFileInput.Lines, and is useful for accessing the field via an interface.
 func (v *__GetLogFileInput) GetLines() *int { return v.Lines }
 
+// __GetNotificationsInput is used internally by genqlient
+type __GetNotificationsInput struct {
+	NotifType  NotificationType        `json:"notifType"`
+	Importance *NotificationImportance `json:"importance"`
+	Limit      int                     `json:"limit"`
+	Offset     int                     `json:"offset"`
+}
+
+// GetNotifType returns __GetNotificationsInput.NotifType, and is useful for accessing the field via an interface.
+func (v *__GetNotificationsInput) GetNotifType() NotificationType { return v.NotifType }
+
+// GetImportance returns __GetNotificationsInput.Importance, and is useful for accessing the field via an interface.
+func (v *__GetNotificationsInput) GetImportance() *NotificationImportance { return v.Importance }
+
+// GetLimit returns __GetNotificationsInput.Limit, and is useful for accessing the field via an interface.
+func (v *__GetNotificationsInput) GetLimit() int { return v.Limit }
+
+// GetOffset returns __GetNotificationsInput.Offset, and is useful for accessing the field via an interface.
+func (v *__GetNotificationsInput) GetOffset() int { return v.Offset }
+
 // __PauseDockerContainerInput is used internally by genqlient
 type __PauseDockerContainerInput struct {
 	Id string `json:"id"`
@@ -1281,6 +1385,54 @@ func GetLogFiles(
 	}
 
 	data_ = &GetLogFilesResponse{}
+	resp_ := &graphql.Response{Data: data_}
+
+	err_ = client_.MakeRequest(
+		ctx_,
+		req_,
+		resp_,
+	)
+
+	return data_, err_
+}
+
+// The query executed by GetNotifications.
+const GetNotifications_Operation = `
+query GetNotifications ($notifType: NotificationType!, $importance: NotificationImportance, $limit: Int!, $offset: Int!) {
+	notifications {
+		list(filter: {type:$notifType,importance:$importance,limit:$limit,offset:$offset}) {
+			id
+			title
+			subject
+			description
+			importance
+			type
+			formattedTimestamp
+		}
+	}
+}
+`
+
+func GetNotifications(
+	ctx_ context.Context,
+	client_ graphql.Client,
+	notifType NotificationType,
+	importance *NotificationImportance,
+	limit int,
+	offset int,
+) (data_ *GetNotificationsResponse, err_ error) {
+	req_ := &graphql.Request{
+		OpName: "GetNotifications",
+		Query:  GetNotifications_Operation,
+		Variables: &__GetNotificationsInput{
+			NotifType:  notifType,
+			Importance: importance,
+			Limit:      limit,
+			Offset:     offset,
+		},
+	}
+
+	data_ = &GetNotificationsResponse{}
 	resp_ := &graphql.Response{Data: data_}
 
 	err_ = client_.MakeRequest(

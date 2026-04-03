@@ -1,0 +1,13 @@
+query GetNotifications($notifType: NotificationType!, $importance: NotificationImportance, $limit: Int!, $offset: Int!) {
+  notifications {
+    list(filter: { type: $notifType, importance: $importance, limit: $limit, offset: $offset }) {
+      id
+      title
+      subject
+      description
+      importance
+      type
+      formattedTimestamp
+    }
+  }
+}

@@ -9,12 +9,88 @@ import (
 	"github.com/medzin/unraid-cli/internal/client"
 )
 
+type notificationRow struct {
+	ID          string `json:"id"`
+	Importance  string `json:"importance"`
+	Title       string `json:"title"`
+	Subject     string `json:"subject"`
+	Description string `json:"description"`
+	Timestamp   string `json:"timestamp"`
+}
+
+func newServerNotificationsCmd() *cobra.Command {
+	var archive bool
+	var lines int
+
+	cmd := &cobra.Command{
+		Use:   "notifications",
+		Short: "List server notifications",
+		Args:  cobra.NoArgs,
+		RunE: func(cmd *cobra.Command, _ []string) error {
+			notifType := client.NotificationTypeUnread
+			if archive {
+				notifType = client.NotificationTypeArchive
+			}
+			offset := 0
+			resp, err := client.GetNotifications(cmd.Context(), getClient(cmd.Context()), notifType, nil, lines, offset)
+			if err != nil {
+				return err
+			}
+
+			entries := make([]notificationRow, len(resp.Notifications.List))
+			for i, n := range resp.Notifications.List {
+				entries[i] = notificationRow{
+					ID:          n.Id,
+					Importance:  strings.ToLower(string(n.Importance)),
+					Title:       n.Title,
+					Subject:     n.Subject,
+					Description: n.Description,
+					Timestamp:   derefStr(n.FormattedTimestamp, ""),
+				}
+			}
+
+			return render(cmd.Context(), entries, func() error {
+				w := getOutputWriter(cmd.Context())
+				if len(entries) == 0 {
+					_, err := fmt.Fprintln(w, "No notifications found.")
+					return err
+				}
+				for i, e := range entries {
+					prefix := fmt.Sprintf("[%s]  ", e.Importance)
+					indent := strings.Repeat(" ", len(prefix))
+					if _, err := fmt.Fprintf(w, "%s%s\n", prefix, e.Title); err != nil {
+						return err
+					}
+					if e.Timestamp != "" {
+						if _, err := fmt.Fprintf(w, "%s%s\n", indent, e.Timestamp); err != nil {
+							return err
+						}
+					}
+					if _, err := fmt.Fprintf(w, "%s%s\n", indent, e.Subject); err != nil {
+						return err
+					}
+					if i < len(entries)-1 {
+						if _, err := fmt.Fprintln(w); err != nil {
+							return err
+						}
+					}
+				}
+				return nil
+			})
+		},
+	}
+
+	cmd.Flags().BoolVar(&archive, "archive", false, "show archived notifications instead of unread")
+	cmd.Flags().IntVar(&lines, "limit", 50, "maximum number of notifications to show")
+	return cmd
+}
+
 func newServerCmd(preRun func(*cobra.Command, []string) error) *cobra.Command {
 	cmd := &cobra.Command{
 		Use:   "server",
 		Short: "Query information about the Unraid server",
 	}
-	cmd.AddCommand(newServerVersionCmd(), newServerLogCmd())
+	cmd.AddCommand(newServerVersionCmd(), newServerLogCmd(), newServerNotificationsCmd())
 	for _, sub := range cmd.Commands() {
 		sub.PreRunE = preRun
 	}

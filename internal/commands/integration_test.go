@@ -351,6 +351,92 @@ func TestServerLogArgValidation(t *testing.T) {
 	}
 }
 
+func TestIntegrationServerNotificationsJSON(t *testing.T) {
+	body := map[string]any{
+		"data": map[string]any{
+			"notifications": map[string]any{
+				"list": []map[string]any{
+					{
+						"id":                 "notif-1",
+						"title":              "Docker - Prowlarr",
+						"subject":            "Notice [NAS] - Version updated",
+						"description":        "Version updated to 1.0.0",
+						"importance":         "INFO",
+						"type":               "UNREAD",
+						"formattedTimestamp": "Thu 02 Apr 2026 12:10:12 AM",
+					},
+				},
+			},
+		},
+	}
+
+	cases := []struct {
+		name          string
+		args          []string
+		wantNotifType string
+		wantLimit     float64
+	}{
+		{name: "default sends UNREAD", args: []string{"notifications"}, wantNotifType: "UNREAD", wantLimit: 50},
+		{name: "archive flag sends ARCHIVE", args: []string{"notifications", "--archive"}, wantNotifType: "ARCHIVE", wantLimit: 50},
+		{name: "limit flag is forwarded", args: []string{"notifications", "--limit", "10"}, wantNotifType: "UNREAD", wantLimit: 10},
+	}
+
+	for _, tc := range cases {
+		t.Run(tc.name, func(t *testing.T) {
+			h := newHarness(t, body)
+			h.run(newServerCmd(h.preRun()), tc.args...)
+
+			if h.vars["notifType"] != tc.wantNotifType {
+				t.Errorf("notifType = %v, want %v", h.vars["notifType"], tc.wantNotifType)
+			}
+			if h.vars["limit"] != tc.wantLimit {
+				t.Errorf("limit = %v, want %v", h.vars["limit"], tc.wantLimit)
+			}
+		})
+	}
+}
+
+func TestIntegrationServerNotificationsFieldsJSON(t *testing.T) {
+	body := map[string]any{
+		"data": map[string]any{
+			"notifications": map[string]any{
+				"list": []map[string]any{
+					{
+						"id":                 "notif-1",
+						"title":              "Docker - Prowlarr",
+						"subject":            "Notice [NAS] - Version updated",
+						"description":        "Version updated to 1.0.0",
+						"importance":         "INFO",
+						"type":               "UNREAD",
+						"formattedTimestamp": "Thu 02 Apr 2026 12:10:12 AM",
+					},
+				},
+			},
+		},
+	}
+
+	h := newHarness(t, body)
+	h.run(newServerCmd(h.preRun()), "notifications")
+
+	got := mustDecodeJSON[[]map[string]any](t, h)
+	if len(got) != 1 {
+		t.Fatalf("expected 1 notification, got %d", len(got))
+	}
+	n := got[0]
+
+	// importance must be lowercased
+	if n["importance"] != "info" {
+		t.Errorf("importance = %v, want \"info\"", n["importance"])
+	}
+	// formattedTimestamp must be mapped to the "timestamp" JSON key
+	if n["timestamp"] != "Thu 02 Apr 2026 12:10:12 AM" {
+		t.Errorf("timestamp = %v, want \"Thu 02 Apr 2026 12:10:12 AM\"", n["timestamp"])
+	}
+	if n["title"] != "Docker - Prowlarr" {
+		t.Errorf("title = %v, want \"Docker - Prowlarr\"", n["title"])
+	}
+}
+
 func TestIntegrationArrayStartJSON(t *testing.T) {
 	h := newHarness(t, map[string]any{
 		"data": map[string]any{
